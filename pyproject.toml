@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "symgp"
+version = "0.1.0"
+description = "Python Symbolic regression with Genetic Programming"
+authors = ["Alessandro Di Matteo <aledimatteo00@gmail.com>"]
+license = "Apache-2.0"
+readme = "README.md"
+homepage = "https://github.com/aledima00/symgp"
+repository = "https://github.com/aledima00/symgp"
+keywords = ["python", "library", "symreg", "genetic programming", "symbolic regression", "GP"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^2.1.3"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+pytest = "^8.3.4"
+flake8 = "^7.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
