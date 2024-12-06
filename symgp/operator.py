@@ -1,65 +1,38 @@
-import numpy as _np
+from typing import List
+from .specifications import TypeSpec, types, dtypes
 from typing import Callable, List, Tuple
 
-class Types:
-    SCALAR = "scalar"
-    NPARRAY = "nparray"
-
-    @classmethod
-    def all(cls):
-        return [cls.SCALAR, cls.NPARRAY]
-
-class DTypes:
-    INT = "int"
-    FLOAT = "float"
-    BOOL = "bool"
-    STR = "str"
-
-    @classmethod
-    def all(cls):
-        return [cls.INT, cls.FLOAT, cls.BOOL, cls.STR]
-
-types = Types.all()
-dtypes = DTypes.all()
-
-class Spec:
+class OpRules:
     """
-    A class to represent the type of an operator's input or output.
+    A class to represent the constraints and the rules for an operator in the symbolic regression model.
     """
-    type:str
-    dtype:str
-    shape:Tuple[int]
-    def __init__(self, type_spec: str, dtype_spec:str,shape_spec:Tuple[int]=None):
-        assert type_spec in types, f"Invalid type {type_spec}. Must be one of {types}"
-        assert dtype_spec in dtypes, f"Invalid dtype {dtype_spec}. Must be one of {dtypes}"
-        if type_spec == Types.NPARRAY:
-            assert shape_spec is not None, "Shape must be provided for nparray type"
-        else:
-            assert shape_spec is None, "Shape must not be provided for scalar type"
-        self.type = type_spec
-        self.dtype = dtype_spec
-        self.shape = shape_spec
+    arity:int
+    output_frule:Callable[[List[TypeSpec], List[Tuple]], TypeSpec] # output type rule function
+    input_types:List[TypeSpec] # fixed input type specs
+    output_type:TypeSpec # fixed output type spec
+    input_fcheck:Callable[[List[TypeSpec], List[Tuple]], bool] # input type check function
 
-    def __repr__(self):
-        return f"Spec(type:{self.type}, dtype:{self.dtype}, shape:{self.shape})"
+    def __init__(self, arity:int, output_frule:Callable[[List[TypeSpec], List[Tuple]], TypeSpec], input_types:List[TypeSpec]=None, output_types:TypeSpec=None, input_fcheck:Callable[[List[TypeSpec], List[Tuple]], bool]=None):
+        self.arity = arity
+        self.output_frule = output_frule
+        self.input_types = input_types if input_types is not None else [TypeSpec() for _ in range(arity)]
+        self.output_types = output_types if output_types is not None else TypeSpec()
+        self.input_fcheck = input_fcheck if input_fcheck is not None else lambda *x: True
+        
 
 class Operator:
     """
     A class to represent an operator in the symbolic regression model.\n
-    Basically a wrapper around a function with some metadata.
+    Basically a wrapper around a function with some metadata to handle compatibility checks and other stuff.
     """
     function:callable
-    arity:int
     name:str
-    output_spec:Spec
-    input_specs:List[Spec]
+    rules:OpRules
 
-    def __init__(self, name:str, function:callable, arity:int, output_type:Spec, input_types:List[Spec]):
+    def __init__(self, name:str, function:callable, rules:OpRules):
         self.name = name
         self.function = function
-        self.arity = arity
-        self.output_type = output_type
-        self.input_types = input_types
+        self.rules = rules
     def __call__(self, *args):
         return self.function(*args)
     def __eq__(self, other):
@@ -73,4 +46,4 @@ class Operator:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-__all__ = ["Operator", "Spec", "types", "dtypes", "Types", "DTypes"]
+__all__ = ["OpRules", "Operator"]
