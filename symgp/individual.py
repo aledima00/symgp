@@ -1,4 +1,4 @@
-from .operator import Operator
+from .operators import Operator
 from typing import List
 
 class Node:

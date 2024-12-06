@@ -1,6 +1,9 @@
+from typing import Tuple
+
 class Types:
     SCALAR = "scalar"
     NPARRAY = "nparray"
+    UNSPECIFIED_TYPE = "unspecified_type"
 
     @classmethod
     def all(cls):
@@ -11,6 +14,7 @@ class DTypes:
     FLOAT = "float"
     BOOL = "bool"
     STR = "str"
+    UNSPECIFIED_DTYPE = "unspecified_dtype"
 
     @classmethod
     def all(cls):
@@ -20,6 +24,7 @@ types = Types.all()
 dtypes = DTypes.all()
 
 class TypeSpec:
+    # add shape specification, that should be None if no fixed shape is required
     """
     A class to represent the type of an operator's input or output in case is fixed (otherwise `None` can be used).
     It can tell:
@@ -28,12 +33,14 @@ class TypeSpec:
     """
     type:str
     dtype:str
-    def __init__(self, type_spec: str=None, dtype_spec:str=None):
-        assert type_spec in types or type_spec is None, f"Invalid type {type_spec}. Must be one of {types}"
-        assert dtype_spec in dtypes or dtype_spec is None, f"Invalid dtype {dtype_spec}. Must be one of {dtypes}"
+    shape:Tuple
+    def __init__(self, type_spec: str, dtype_spec:str, shape:Tuple=None):
+        assert type_spec in types, f"Invalid type '{type_spec}'. Must be one of {types}"
+        assert dtype_spec in dtypes, f"Invalid dtype '{dtype_spec}'. Must be one of {dtypes}"
         self.type = type_spec
         self.dtype = dtype_spec
+        self.shape = None
     def __repr__(self):
-        return f"TypeSpec(type:{self.type}, dtype:{self.dtype})"
+        return f"TypeSpec(type:{self.type}, dtype:{self.dtype}, shape:{self.shape or 'UNSPECIFIED'})"
         
 __all__ = ["TypeSpec", "types", "dtypes", "Types", "DTypes"]

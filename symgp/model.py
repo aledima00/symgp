@@ -1,4 +1,4 @@
-from .operator import Operator as _op
+from .operators import Operator as _op
 from .individual import Leaf
 
 class Model:
