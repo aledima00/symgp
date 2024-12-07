@@ -42,5 +42,7 @@ class TypeSpec:
         self.shape = None
     def __repr__(self):
         return f"TypeSpec(type:{self.type}, dtype:{self.dtype}, shape:{self.shape or 'UNSPECIFIED'})"
+    def copy(self):
+        return TypeSpec(self.type, self.dtype, self.shape)
         
 __all__ = ["TypeSpec", "types", "dtypes", "Types", "DTypes"]
