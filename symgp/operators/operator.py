@@ -1,5 +1,5 @@
 from typing import Callable
-from .oprules import _OPRS    
+from .oprules import OpRules as _OPRS    
 
 class Operator:
     """
