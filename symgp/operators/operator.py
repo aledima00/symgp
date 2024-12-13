@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable as _Callable
 from .oprules import OpRules as _OPRS    
 
 class Operator:
@@ -6,11 +6,11 @@ class Operator:
     A class to represent an operator in the symbolic regression model.\n
     Basically a wrapper around a function with some metadata to handle compatibility checks and other stuff.
     """
-    function:Callable
+    function:_Callable
     name:str
     rules:_OPRS
 
-    def __init__(self, name:str, function:Callable, rules:_OPRS):
+    def __init__(self, name:str, function:_Callable, rules:_OPRS):
         self.name = name
         self.function = function
         self.rules = rules

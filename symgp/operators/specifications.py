@@ -1,12 +1,12 @@
-from typing import Tuple
-from enum import Enum
+from typing import Tuple as _Tuple
+from enum import Enum as _Enum
 
-class ShapeTypes(Enum):
+class ShapeTypes(_Enum):
     SCALAR = "scalar"
     NPARRAY = "nparray"
     UNSPECIFIED_TYPE = "unspecified_type"
 
-class DataTypes(Enum):
+class DataTypes(_Enum):
     INT = "int"
     FLOAT = "float"
     BOOL = "bool"
@@ -22,7 +22,7 @@ class Specs:
     - if the type is scalar or nparray
     - if the dtype is int, float, bool, or str
     """
-    def __init__(self, shape_type:ShapeTypes, data_type:DataTypes, shape:Tuple):
+    def __init__(self, shape_type:ShapeTypes, data_type:DataTypes, shape:_Tuple):
         assert shape_type in ShapeTypes, f"Invalid shape type: {shape_type}"
         assert data_type in DataTypes, f"Invalid data type: {data_type}"
         assert shape_type != ShapeTypes.NPARRAY or shape is not None, "NPArray type requires a shape (Tuple)"

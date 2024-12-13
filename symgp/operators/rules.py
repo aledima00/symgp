@@ -1,8 +1,8 @@
 from .specifications import Specs as _SP
-from typing import List
-from enum import Enum
+from typing import List as _List
+from enum import Enum as _Enum
 
-class OUTPUT_FRULES(Enum):
+class OUTPUT_FRULES(_Enum):
     """
     Enum to represent the possible output type rules for an operator.
     Basically a function that obtain th output spces from the input specs.
@@ -12,7 +12,7 @@ class OUTPUT_FRULES(Enum):
     MATMUL_SHAPE = 3
     UNPREDICTABLE = 4
 
-    def eval(self, spec_list:List[_SP]):
+    def eval(self, spec_list:_List[_SP]):
         if self == OUTPUT_FRULES.INHERIT_SHAPE:
             return spec_list[0]
         elif self == OUTPUT_FRULES.TRANSPOSE_SHAPE:
@@ -31,7 +31,7 @@ class OUTPUT_FRULES(Enum):
             raise ValueError("Invalid output rule")
         
 
-class INPUT_BINARY_FCHECKS(Enum):
+class INPUT_BINARY_FCHECKS(_Enum):
     """
     Enum to represent the possible input type checks for first 2 inputs of an operator.
     Basically bool checks on input specs.
@@ -43,7 +43,7 @@ class INPUT_BINARY_FCHECKS(Enum):
     TRANSPOSED_SHAPE = 4
     SKIP = 5
 
-    def eval(self, spec_list:List[_SP]):
+    def eval(self, spec_list:_List[_SP]):
         if self == INPUT_BINARY_FCHECKS.SAME_TYPE:
             return spec_list[0].type == spec_list[1].type
         elif self == INPUT_BINARY_FCHECKS.SAME_DTYPE:
