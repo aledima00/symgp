@@ -31,7 +31,7 @@ class Specs:
         self.data_type = data_type
         self.shape = shape
     def __repr__(self):
-        return f"TypeSpec(shape_type:{self.shape_type}, dtype:{self.data_type}, shape:{self.shape or 'UNSPECIFIED'})"
+        return f"Specifications(shape_type:{self.shape_type}, dtype:{self.data_type}, shape:{self.shape or 'UNSPECIFIED'})"
     def copy(self):
         return Specs(self.shape_type, self.data_type, self.shape)
         

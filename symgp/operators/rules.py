@@ -1,4 +1,4 @@
-from .specifications import Specs as SP
+from .specifications import Specs as _SP
 from typing import List
 from enum import Enum
 
@@ -11,7 +11,7 @@ class OUTPUT_FRULES(Enum):
     TRANSPOSE_SHAPE = 2
     MATMUL_SHAPE = 3
 
-    def eval(self, spec_list:List[SP]):
+    def eval(self, spec_list:List[_SP]):
         if self == OUTPUT_FRULES.INHERIT_SHAPE:
             return spec_list[0]
         elif self == OUTPUT_FRULES.TRANSPOSE_SHAPE:
@@ -39,7 +39,7 @@ class INPUT_BINARY_FCHECKS(Enum):
     SAME_SHAPE = 3
     TRANSPOSED_SHAPE = 4
 
-    def eval(self, spec_list:List[SP]):
+    def eval(self, spec_list:List[_SP]):
         if self == INPUT_BINARY_FCHECKS.SAME_TYPE:
             return spec_list[0].type == spec_list[1].type
         elif self == INPUT_BINARY_FCHECKS.SAME_DTYPE:

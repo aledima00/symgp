@@ -1,17 +1,16 @@
-from typing import List
-from .specifications import TypeSpec, types, dtypes
-from .oprules import OpRules        
+from typing import Callable
+from .oprules import _OPRS    
 
 class Operator:
     """
     A class to represent an operator in the symbolic regression model.\n
     Basically a wrapper around a function with some metadata to handle compatibility checks and other stuff.
     """
-    function:callable
+    function:Callable
     name:str
-    rules:OpRules
+    rules:_OPRS
 
-    def __init__(self, name:str, function:callable, rules:OpRules):
+    def __init__(self, name:str, function:Callable, rules:_OPRS):
         self.name = name
         self.function = function
         self.rules = rules
