@@ -1,6 +1,7 @@
 from typing import List as _List
-from .specifications import Specs as _Specs
+from .specifications import Specs as _Specs, ShapeTypes as _ST, DataTypes as _DT
 from .rules import OUTPUT_COMPUTE_RULES as _OCR, INPUT_BINARY_CHECKS as _IBC
+from icecream import ic
 
 class OpRules:
     """
@@ -28,38 +29,43 @@ class OpRules:
 
     def __update_output_specs(self):
         for rule in self.output_rules:
-            if rule.value == _OCR.INHERIT_TYPE:
-                self.output_specs.shape_type = self.input_specs[0].shape_type
-            elif rule.value == _OCR.INHERIT_DTYPE:
-                self.output_specs.data_type = self.input_specs[0].data_type
-            elif rule.value == _OCR.INHERIT_SHAPE:
-                self.output_specs.shape = self.input_specs[0].shape
-            elif rule.value == _OCR.TRANSPOSE_SHAPE:
-                self.output_specs.shape = self.input_specs[0].shape[::-1]
-            elif rule.value == _OCR.MATMUL_SHAPE:
-                self.output_specs.shape = (self.input_specs[0].shape[0], self.input_specs[1].shape[1])
+            if rule == _OCR.INHERIT_SHAPE_TYPE:
+                self.output_specs.shape_type = self.inputs_specs[0].shape_type
+            elif rule == _OCR.INHERIT_DATA_TYPE:
+                self.output_specs.data_type = self.inputs_specs[0].data_type
+            elif rule == _OCR.INHERIT_SHAPE:
+                if self.inputs_specs[0].shape_type == _ST.NPARRAY:
+                    self.output_specs.shape = self.inputs_specs[0].shape
+            elif rule == _OCR.TRANSPOSE_SHAPE:
+                if self.inputs_specs[0].shape_type == _ST.NPARRAY:
+                    self.output_specs.shape = self.inputs_specs[0].shape[::-1]
+            elif rule == _OCR.MATMUL_SHAPE:
+                if self.inputs_specs[0].shape_type == _ST.NPARRAY and self.inputs_specs[1].shape_type == _ST.NPARRAY:
+                    self.output_specs.shape = (self.inputs_specs[0].shape[0], self.inputs_specs[1].shape[1])
             else:
-                raise ValueError("Invalid output rule")
+                raise ValueError(f"Invalid output rule {rule}")
             
-    def check_input_specs(self):
+    def check_inputs_specs(self):
         for rule in self.input_binary_checks:
-            if rule.value == _IBC.SAME_TYPE:
+            if rule.value == _IBC.SAME_SHAPE_TYPE:
                 if self.inputs_specs[0].shape_type != self.inputs_specs[1].shape_type:
                     return False
-            elif rule.value == _IBC.SAME_DTYPE:
+            elif rule.value == _IBC.SAME_DATA_TYPE:
                 if self.inputs_specs[0].data_type != self.inputs_specs[1].data_type:
                     return False
             elif rule.value == _IBC.SAME_SHAPE:
-                if self.inputs_specs[0].shape != self.inputs_specs[1].shape:
-                    return False
+                if self.inputs_specs[0].shape_type == _ST.NPARRAY and self.inputs_specs[1].shape_type == _ST.NPARRAY:
+                    if self.inputs_specs[0].shape != self.inputs_specs[1].shape:
+                        return False
             elif rule.value == _IBC.TRANSPOSED_SHAPE:
-                if self.inputs_specs[0].shape != self.inputs_specs[1].shape[::-1]:
-                    return False
+                if self.inputs_specs[0].shape_type == _ST.NPARRAY and self.inputs_specs[1].shape_type == _ST.NPARRAY:
+                    if self.inputs_specs[0].shape != self.inputs_specs[1].shape[::-1]:
+                        return False
             else:
                 raise ValueError("Invalid input check rule")
         return True
             
-    def modify_input_specs(self, specs:_List[_Specs]):
+    def modify_inputs_specs(self, specs:_List[_Specs]):
         self.inputs_specs = specs
         self.__update_output_specs()
 
