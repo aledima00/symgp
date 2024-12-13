@@ -1,4 +1,3 @@
-from .oprules import OpRules
 from .specifications import Specs as SP
 from typing import List
 from enum import Enum
@@ -52,4 +51,4 @@ class INPUT_BINARY_FCHECKS(Enum):
         else:
             raise ValueError("Invalid input binary fcheck")
 
-__all__ = ["OpRules", "OUTPUT_FRULES", "INPUT_BINARY_FCHECKS"]
+__all__ = ["OUTPUT_FRULES", "INPUT_BINARY_FCHECKS"]
