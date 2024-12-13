@@ -1,15 +1,21 @@
 from typing import Callable, List
-from .specifications import TypeSpec
+from .specifications import Specs
+from enum import Enum
 
 class OpRules:
     """
     A class to represent the constraints and the rules for an operator in the symbolic regression model.
     """
+    
+
     arity:int
-    output_frule:Callable[[List[TypeSpec]], TypeSpec] # output type rule function
+    inputs_specs: List[Specs]
+    output_specs: Specs
+    input_con
+    output_rules:List # output type rule function
     input_types:List[TypeSpec] # fixed input type specs
     output_type:TypeSpec # fixed output type spec
-    input_fcheck:Callable[[List[TypeSpec]], bool] # input type check function
+    input_fcheck:List[Callable[[List[TypeSpec]], bool]] # input type check function
 
     def __init__(self, arity:int, output_frule:Callable[[List[TypeSpec]], TypeSpec], input_types:List[TypeSpec]=None, output_type:TypeSpec=None, input_fcheck:Callable[[List[TypeSpec]], bool]=None):
         self.arity = arity
