@@ -1,5 +1,9 @@
 from colorama import Fore, Back, Style
 
+_FORE_ALLOWED_VALUES =  [Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE, Fore.RESET]
+_BACK_ALLOWED_VALUES =  [Back.BLACK, Back.RED, Back.GREEN, Back.YELLOW, Back.BLUE, Back.MAGENTA, Back.CYAN, Back.WHITE, Back.RESET]
+_STYLE_ALLOWED_VALUES = [Style.DIM, Style.NORMAL, Style.BRIGHT, Style.RESET_ALL]
+
 class Formatted:
     _text:str
     _indentation:int
@@ -28,13 +32,16 @@ class Formatted:
         self._text += text
         return self
     def fore(self,color:str):
+        assert color in _FORE_ALLOWED_VALUES, f"Invalid fore color: {color}"
         self._fore = color
         self._text += color
         return self
     def back(self,color:str):
+        assert color in _BACK_ALLOWED_VALUES, f"Invalid back color: {color}"
         self._text += color
         return self
     def style(self,style:str):
+        assert style in _STYLE_ALLOWED_VALUES, f"Invalid style: {style}"
         self._text += style
         return self
     
