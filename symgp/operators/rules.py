@@ -10,6 +10,7 @@ class OUTPUT_FRULES(Enum):
     INHERIT_SHAPE = 1
     TRANSPOSE_SHAPE = 2
     MATMUL_SHAPE = 3
+    UNPREDICTABLE = 4
 
     def eval(self, spec_list:List[_SP]):
         if self == OUTPUT_FRULES.INHERIT_SHAPE:
@@ -24,6 +25,8 @@ class OUTPUT_FRULES(Enum):
             ret = spec_list[0].copy()
             ret.shape = (s1[0], s2[1])
             return ret
+        elif self == OUTPUT_FRULES.UNPREDICTABLE:
+            return _SP()
         else:
             raise ValueError("Invalid output rule")
         
@@ -38,6 +41,7 @@ class INPUT_BINARY_FCHECKS(Enum):
     SAME_DTYPE = 2
     SAME_SHAPE = 3
     TRANSPOSED_SHAPE = 4
+    SKIP = 5
 
     def eval(self, spec_list:List[_SP]):
         if self == INPUT_BINARY_FCHECKS.SAME_TYPE:
@@ -48,6 +52,8 @@ class INPUT_BINARY_FCHECKS(Enum):
             return spec_list[0].shape == spec_list[1].shape
         elif self == INPUT_BINARY_FCHECKS.TRANSPOSED_SHAPE:
             return spec_list[0].shape == spec_list[1].shape[::-1]
+        elif self == INPUT_BINARY_FCHECKS.SKIP:
+            return True
         else:
             raise ValueError("Invalid input binary fcheck")
 
