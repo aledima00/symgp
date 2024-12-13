@@ -22,7 +22,8 @@ class Specs:
     - if the type is scalar or nparray
     - if the dtype is int, float, bool, or str
     """
-    def __init__(self, shape_type:ShapeTypes, data_type:DataTypes, shape:_Tuple):
+    def __init__(self, shape_type:ShapeTypes=ShapeTypes.UNSPECIFIED_TYPE, data_type:DataTypes=DataTypes.UNSPECIFIED_DTYPE, shape:_Tuple=None):
+        
         assert shape_type in ShapeTypes, f"Invalid shape type: {shape_type}"
         assert data_type in DataTypes, f"Invalid data type: {data_type}"
         assert shape_type != ShapeTypes.NPARRAY or shape is not None, "NPArray type requires a shape (Tuple)"

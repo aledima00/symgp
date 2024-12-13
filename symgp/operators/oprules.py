@@ -1,27 +1,66 @@
-from typing import Callable, List
-from .specifications import Specs
-from enum import Enum
+from typing import List as _List
+from .specifications import Specs as _Specs
+from .rules import OUTPUT_COMPUTE_RULES as _OCR, INPUT_BINARY_CHECKS as _IBC
 
 class OpRules:
     """
     A class to represent the constraints and the rules for an operator in the symbolic regression model.
     """
-    
 
     arity:int
-    inputs_specs: List[Specs]
-    output_specs: Specs
-    input_con
-    output_rules:List # output type rule function
-    input_types:List[TypeSpec] # fixed input type specs
-    output_type:TypeSpec # fixed output type spec
-    input_fcheck:List[Callable[[List[TypeSpec]], bool]] # input type check function
 
-    def __init__(self, arity:int, output_frule:Callable[[List[TypeSpec]], TypeSpec], input_types:List[TypeSpec]=None, output_type:TypeSpec=None, input_fcheck:Callable[[List[TypeSpec]], bool]=None):
+    inputs_specs: _List[_Specs] # FIXED SPECIFICATIONS FOR INPUTS
+    output_specs: _Specs # FIXED SPECIFICATIONS FOR OUTPUT
+
+    output_rules:_List[_OCR] # RULES TO COMPUTE OUTPUT SPECS GIVEN INPUT SPECS
+    input_check_rules:_List[_IBC] # RULES TO CHECK INPUT SPECS ADDITIONAL CONSTRAINTS
+
+
+    def __init__(self, arity:int, inputs_specs:_List[_Specs]=None, output_specs:_Specs=None, output_rules:_List[_OCR]=[], input_binary_checks:_List[_IBC]=[]):
         self.arity = arity
-        self.output_frule = output_frule
-        self.input_types = input_types if input_types is not None else [TypeSpec() for _ in range(arity)]
-        self.output_type = output_type if output_type is not None else TypeSpec()
-        self.input_fcheck = input_fcheck if input_fcheck is not None else lambda *x: True
+
+        self.inputs_specs = inputs_specs if inputs_specs is not None else [_Specs() for _ in range(arity)]
+        self.output_specs = output_specs if output_specs is not None else _Specs()
+        
+        self.output_rules = output_rules
+        self.input_binary_checks = input_binary_checks
+        self.__update_output_specs()
+
+    def __update_output_specs(self):
+        for rule in self.output_rules:
+            if rule.value == _OCR.INHERIT_TYPE:
+                self.output_specs.shape_type = self.input_specs[0].shape_type
+            elif rule.value == _OCR.INHERIT_DTYPE:
+                self.output_specs.data_type = self.input_specs[0].data_type
+            elif rule.value == _OCR.INHERIT_SHAPE:
+                self.output_specs.shape = self.input_specs[0].shape
+            elif rule.value == _OCR.TRANSPOSE_SHAPE:
+                self.output_specs.shape = self.input_specs[0].shape[::-1]
+            elif rule.value == _OCR.MATMUL_SHAPE:
+                self.output_specs.shape = (self.input_specs[0].shape[0], self.input_specs[1].shape[1])
+            else:
+                raise ValueError("Invalid output rule")
+            
+    def check_input_specs(self):
+        for rule in self.input_binary_checks:
+            if rule.value == _IBC.SAME_TYPE:
+                if self.inputs_specs[0].shape_type != self.inputs_specs[1].shape_type:
+                    return False
+            elif rule.value == _IBC.SAME_DTYPE:
+                if self.inputs_specs[0].data_type != self.inputs_specs[1].data_type:
+                    return False
+            elif rule.value == _IBC.SAME_SHAPE:
+                if self.inputs_specs[0].shape != self.inputs_specs[1].shape:
+                    return False
+            elif rule.value == _IBC.TRANSPOSED_SHAPE:
+                if self.inputs_specs[0].shape != self.inputs_specs[1].shape[::-1]:
+                    return False
+            else:
+                raise ValueError("Invalid input check rule")
+        return True
+            
+    def modify_input_specs(self, specs:_List[_Specs]):
+        self.inputs_specs = specs
+        self.__update_output_specs()
 
 __all__ = ["OpRules"]
