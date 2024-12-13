@@ -1,29 +1,20 @@
 from typing import Tuple
+from enum import Enum
 
-class Types:
+class ShapeTypes(Enum):
     SCALAR = "scalar"
     NPARRAY = "nparray"
     UNSPECIFIED_TYPE = "unspecified_type"
 
-    @classmethod
-    def all(cls):
-        return [cls.SCALAR, cls.NPARRAY]
-
-class DTypes:
+class DataTypes(Enum):
     INT = "int"
     FLOAT = "float"
     BOOL = "bool"
     STR = "str"
     UNSPECIFIED_DTYPE = "unspecified_dtype"
 
-    @classmethod
-    def all(cls):
-        return [cls.INT, cls.FLOAT, cls.BOOL, cls.STR]
 
-types = Types.all()
-dtypes = DTypes.all()
-
-class TypeSpec:
+class Specs:
     # add shape specification, that should be None if no fixed shape is required
     """
     A class to represent the type of an operator's input or output in case is fixed (otherwise `None` can be used).
@@ -31,18 +22,17 @@ class TypeSpec:
     - if the type is scalar or nparray
     - if the dtype is int, float, bool, or str
     """
-    type:str
-    dtype:str
-    shape:Tuple
-    def __init__(self, type_spec: str, dtype_spec:str, shape:Tuple=None):
-        assert type_spec in types, f"Invalid type '{type_spec}'. Must be one of {types}"
-        assert dtype_spec in dtypes, f"Invalid dtype '{dtype_spec}'. Must be one of {dtypes}"
-        self.type = type_spec
-        self.dtype = dtype_spec
-        self.shape = None
+    def __init__(self, shape_type:ShapeTypes, data_type:DataTypes, shape:Tuple):
+        assert shape_type in ShapeTypes, f"Invalid shape type: {shape_type}"
+        assert data_type in DataTypes, f"Invalid data type: {data_type}"
+        assert shape_type != ShapeTypes.NPARRAY or shape is not None, "NPArray type requires a shape (Tuple)"
+
+        self.shape_type = shape_type
+        self.data_type = data_type
+        self.shape = shape
     def __repr__(self):
-        return f"TypeSpec(type:{self.type}, dtype:{self.dtype}, shape:{self.shape or 'UNSPECIFIED'})"
+        return f"TypeSpec(shape_type:{self.shape_type}, dtype:{self.data_type}, shape:{self.shape or 'UNSPECIFIED'})"
     def copy(self):
-        return TypeSpec(self.type, self.dtype, self.shape)
+        return Specs(self.shape_type, self.data_type, self.shape)
         
-__all__ = ["TypeSpec", "types", "dtypes", "Types", "DTypes"]
+__all__ = ["Specs", "ShapeTypes", "DataTypes"]
