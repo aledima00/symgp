@@ -294,4 +294,4 @@ windows-terminal = ["colorama (>=0.4.6)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "9be0937b8b63082641929dcf750c232e2329e0a8b793fbe8ed124a1561ea7fa3"
+content-hash = "834a1f23c70c64ff41093f9b3c682fb0d7b7986f7eaee0f294eb6ffcd721ca80"
