@@ -8,6 +8,9 @@ class ShapeTypes(_Enum):
     NPARRAY = "nparray"
     UNSPECIFIED_SHAPE_TYPE = "unspecified_type"
 
+    def check_compatibility(self, other:"ShapeTypes")->bool:
+        return self == other or self == ShapeTypes.UNSPECIFIED_SHAPE_TYPE
+
 class DataTypes(_Enum):
     INT = "int"
     FLOAT = "float"
@@ -15,6 +18,11 @@ class DataTypes(_Enum):
     STR = "str"
     UNSPECIFIED_DATA_TYPE = "unspecified_dtype"
 
+    def check_compatibility(self, other:"DataTypes")->bool:
+        return self == other or self == DataTypes.UNSPECIFIED_DATA_TYPE
+    
+def check_shape_compatibility(shape1:_Tuple, shape2:_Tuple)->bool:
+    return shape1 == shape2 or shape1 is None
 
 class Specs:
     # add shape specification, that should be None if no fixed shape is required
@@ -47,5 +55,8 @@ class Specs:
         return str(self)
     def copy(self):
         return Specs(self.shape_type, self.data_type, self.shape)
+    
+    def check_compatibility(self, actual:"Specs")->bool:
+        return self.shape_type.check_compatibility(actual.shape_type) and self.data_type.check_compatibility(actual.data_type) and check_shape_compatibility(self.shape, actual.shape)
         
 __all__ = ["Specs", "ShapeTypes", "DataTypes"]
