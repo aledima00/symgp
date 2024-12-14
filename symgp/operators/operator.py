@@ -1,5 +1,8 @@
 from typing import Callable as _Callable
-from .oprules import OpRules as _OPRS    
+from .oprules import OpRules as _OPRS   
+from ..format import Formatted
+from colorama import Fore, Back, Style 
+import inspect
 
 class Operator:
     """
@@ -19,7 +22,13 @@ class Operator:
     def __eq__(self, other):
         return self.name == other.name
     def __str__(self):
-        return self.name
+        fstr = Formatted()
+        fstr.fore(Fore.YELLOW).append(f"Operator('{self.name}'){{").ret().indent()
+        fstr.fore(Fore.GREEN).append(f"Function:\t").fore(Fore.CYAN).append(f"`{self.function.__name__}`, defined in: {inspect.getsourcefile(self.function)}, @ line {inspect.getsourcelines(self.function)[1]}").ret()
+        fstr.fore(Fore.GREEN).append(f"Rules:\t\t")
+        fstr.concatenate(self.rules.fstr()).ret()
+        fstr.unindent().fore(Fore.YELLOW).append("}")
+        return str(fstr)
     def __repr__(self):
         return self.name
     def __hash__(self):

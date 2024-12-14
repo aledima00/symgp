@@ -1,7 +1,8 @@
 from typing import List as _List
 from .specifications import Specs as _Specs, ShapeTypes as _ST, DataTypes as _DT
 from .rules import OUTPUT_COMPUTE_RULES as _OCR, INPUT_BINARY_CHECKS as _IBC
-from icecream import ic
+from colorama import Fore, Back, Style
+from ..format import Formatted
 
 class OpRules:
     """
@@ -62,11 +63,39 @@ class OpRules:
                     if self.inputs_specs[0].shape != self.inputs_specs[1].shape[::-1]:
                         return False
             else:
-                raise ValueError("Invalid input check rule")
+                raise ValueError(f"Invalid input check rule {rule}")
         return True
             
     def modify_inputs_specs(self, specs:_List[_Specs]):
         self.inputs_specs = specs
         self.__update_output_specs()
+
+
+    def fstr(self):
+        ibc_names = str([item.name for item in self.input_binary_checks])
+        ocr_names = str([item.name for item in self.output_rules])
+
+        fstr = Formatted()
+
+        fstr.style(Style.DIM).fore(Fore.WHITE).append("OPERATOR_RULES(").ret().indent()
+        fstr.fore(Fore.GREEN).append(f"ARITY:\t\t\t").fore(Fore.CYAN).append(f"{self.arity}").ret()
+        fstr.fore(Fore.GREEN).append(f"INPUTS_SPECS:\t\t").fore(Fore.CYAN).append("[").ret().indent()
+        
+        for i in range(self.arity):
+            fstr.concatenate(self.inputs_specs[i].fstr())
+            if i != self.arity-1:
+                fstr.fore(Fore.CYAN).append(",")
+            fstr.ret()
+        fstr.unindent().append(f"{Fore.CYAN}]").ret()
+        
+        fstr.fore(Fore.GREEN).append(f"OUTPUT_SPECS:\t").fore(Fore.CYAN).concatenate(self.output_specs.fstr()).fore(Fore.GREEN).ret()
+        fstr.append(f"OUTPUT_RULES:\t").fore(Fore.CYAN).append(ocr_names).fore(Fore.GREEN).ret()
+        fstr.append(f"INPUT_BINARY_CHECKS:\t").fore(Fore.CYAN).append(ibc_names).fore(Fore.GREEN).ret()
+        fstr.unindent().fore(Fore.WHITE).append(")").ret()
+        return fstr
+    def __str__(self):
+        return str(self.fstr())
+    def __repr__(self):
+        return str(self)
 
 __all__ = ["OpRules"]
