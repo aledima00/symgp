@@ -1,6 +1,6 @@
 from .operators import Operator
 from typing import List
-from .format import Formatted
+from consoleformat import Formatted
 from colorama import Fore
 
 class Node:

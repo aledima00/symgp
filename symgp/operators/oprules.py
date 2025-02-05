@@ -2,7 +2,7 @@ from typing import List as _List
 from .specifications import Specs as _Specs, ShapeTypes as _ST, DataTypes as _DT
 from .rules import OUTPUT_COMPUTE_RULES as _OCR, INPUT_BINARY_CHECKS as _IBC
 from colorama import Fore
-from ..format import Formatted
+from consoleformat import Formatted
 
 class OpRules:
     """

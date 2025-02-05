@@ -1,6 +1,6 @@
 from typing import Callable as _Callable
 from .oprules import OpRules as _OPRS   
-from ..format import Formatted
+from consoleformat import Formatted
 from colorama import Fore, Back, Style 
 import inspect
 import re

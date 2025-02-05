@@ -85,6 +85,24 @@ files = [
 ]
 
 [[package]]
+name = "consoleformat"
+version = "0.1.0"
+description = "AboutDead simple tool for ✨ Console formatting in python ✨"
+optional = false
+python-versions = "^3.12"
+files = []
+develop = false
+
+[package.dependencies]
+colorama = "^0.4.6"
+
+[package.source]
+type = "git"
+url = "https://github.com/aledima00/ConsoleFormat.git"
+reference = "HEAD"
+resolved_reference = "7b2a5ac7164745ab684add87aa0b231f6423e68f"
+
+[[package]]
 name = "executing"
 version = "2.1.0"
 description = "Get the currently executing AST node of a frame, and other information"
@@ -294,4 +312,4 @@ windows-terminal = ["colorama (>=0.4.6)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "834a1f23c70c64ff41093f9b3c682fb0d7b7986f7eaee0f294eb6ffcd721ca80"
+content-hash = "07c9caacfc7311171518e46cb62aad00a0dbcede958e097909fa26a223d5d858"

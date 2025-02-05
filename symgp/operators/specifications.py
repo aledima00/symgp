@@ -1,7 +1,7 @@
 from typing import Tuple as _Tuple
 from enum import Enum as _Enum
 from colorama import Fore
-from ..format import Formatted
+from consoleformat import Formatted
 
 class ShapeTypes(_Enum):
     SCALAR = "scalar"
