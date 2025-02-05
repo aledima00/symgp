@@ -1,7 +1,7 @@
 from typing import List as _List
 from .specifications import Specs as _Specs, ShapeTypes as _ST, DataTypes as _DT
 from .rules import OUTPUT_COMPUTE_RULES as _OCR, INPUT_BINARY_CHECKS as _IBC
-from colorama import Fore, Back, Style
+from colorama import Fore
 from ..format import Formatted
 
 class OpRules:
@@ -94,31 +94,33 @@ class OpRules:
                 raise ValueError(f"Invalid input check rule {rule}")
         return True
     
-    def fstr(self):
+    def fstr(self,fstr:Formatted=Formatted()):
         ibc_names = str([item.name for item in self.input_binary_checks])
         ocr_names = str([item.name for item in self.output_rules])
-
-        fstr = Formatted()
 
         is_is_actual = self.__actual_inputs_specs is not None
         input_specs = self.__actual_inputs_specs if is_is_actual else self.__input_specs
 
-        fstr.style(Style.DIM).fore(Fore.WHITE).append("OPERATOR_RULES(").ret().indent()
-        fstr.fore(Fore.GREEN).append(f"ARITY:\t\t\t").fore(Fore.CYAN).append(f"{self.arity}").ret()
-        fstr.fore(Fore.GREEN).append(f"INPUTS_SPECS").fore(Fore.YELLOW).append(f"[{"ACTUAL" if is_is_actual else "BASE"}]:\t").fore(Fore.CYAN).append("[").ret().indent()
+        fstr.append(f"ARITY: ").fore(Fore.CYAN).append(f"{self.arity}").ret().dropFore()
+        fstr.append(f"INPUTS_SPECS(").append(f"{"ACTUAL" if is_is_actual else "BASE"}",fore=Fore.YELLOW).append(")")
+        
+        ## start of input specs
+        fstr.fore(Fore.CYAN).append("[").ret().indent()
         
         
         for i in range(self.arity):
-            fstr.concatenate(input_specs[i].fstr())
+            input_specs[i].fstr(fstr)
             if i != self.arity-1:
-                fstr.fore(Fore.CYAN).append(",")
+                fstr.append(",")
             fstr.ret()
-        fstr.unindent().append(f"{Fore.CYAN}]").ret()
+        fstr.unindent().append("]").dropFore().ret()
+        ## end of input specks
         
-        fstr.fore(Fore.GREEN).append(f"OUTPUT_SPECS:\t\t").fore(Fore.CYAN).concatenate(self.output_specs.fstr()).fore(Fore.GREEN).ret()
-        fstr.append(f"OUTPUT_RULES:\t\t").fore(Fore.CYAN).append(ocr_names).fore(Fore.GREEN).ret()
-        fstr.append(f"INPUT_BINARY_CHECKS:\t").fore(Fore.CYAN).append(ibc_names).fore(Fore.GREEN).ret()
-        fstr.unindent().fore(Fore.WHITE).append(")").ret()
+        fstr.append(f"OUTPUT_SPECS:\t\t")
+        self.output_specs.fstr(fstr).ret()
+        fstr.append(f"OUTPUT_RULES:\t\t").fore(Fore.CYAN).append(ocr_names).ret().dropFore()
+        fstr.append(f"INPUT_BINARY_CHECKS:\t").fore(Fore.CYAN).append(ibc_names).ret().dropFore()
+        fstr.unindent().ret()
         return fstr
     def __str__(self):
         return str(self.fstr())

@@ -1,6 +1,6 @@
 from typing import Tuple as _Tuple
 from enum import Enum as _Enum
-from colorama import Fore, Back, Style
+from colorama import Fore
 from ..format import Formatted
 
 class ShapeTypes(_Enum):
@@ -42,12 +42,13 @@ class Specs:
         self.data_type = data_type
         self.shape = shape
 
-    def fstr(self)->Formatted:
-        fstr = Formatted()
-        fstr.style(Style.DIM).fore(Fore.WHITE).append("Specs(").ret().indent()
-        fstr.fore(Fore.GREEN).append(f"ShapeType:").fore(Fore.CYAN).append(f"\t'{self.shape_type.name}'").ret()
-        fstr.fore(Fore.GREEN).append(f"DataType:").fore(Fore.CYAN).append(f"\t'{self.data_type.name}'").ret()
-        fstr.fore(Fore.GREEN).append(f"Shape:").fore(Fore.CYAN).append(f"\t\t'{self.shape or "UNSPECIFIED_SHAPE"}'").ret().unindent().fore(Fore.WHITE).append(")")
+    def fstr(self,fstr:Formatted=Formatted())->Formatted:
+        fstr.fore(Fore.WHITE)
+        fstr.append("Specs(").ret().indent()
+        fstr.append(f"ShapeType:",fore=Fore.GREEN).append(f"\t'{self.shape_type.name}'",fore=Fore.CYAN).ret()
+        fstr.append(f"DataType:",fore=Fore.GREEN).append(f"\t'{self.data_type.name}'",fore=Fore.CYAN).ret()
+        fstr.append(f"Shape:",fore=Fore.GREEN).append(f"\t\t'{self.shape or "UNSPECIFIED_SHAPE"}'",fore=Fore.CYAN).ret()
+        fstr.unindent().append(")").dropFore()
         return fstr
     def __str__(self):
         return str(self.fstr())

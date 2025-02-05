@@ -22,17 +22,22 @@ class Operator:
         return self.function(*args)
     def __eq__(self, other):
         return self.name == other.name
-    def fstr(self)->Formatted:
-        fstr = Formatted()
-        fstr.fore(Fore.YELLOW).append(self.name)
+    def fstr(self,fstr:Formatted=Formatted())->Formatted:
+        fstr.append(self.name,fore=Fore.YELLOW)
         return fstr
-    def getInfo(self)->str:
-        fstr = Formatted()
-        fstr.style(Style.DIM).fore(Fore.YELLOW).append(f"Operator('{self.name}'){{").ret().indent()
-        fstr.fore(Fore.GREEN).append(f"Function:\t").fore(Fore.CYAN).append(f"`{self.function.__name__}`, defined in: {inspect.getsourcefile(self.function)}, @ line {inspect.getsourcelines(self.function)[1]}").ret()
-        fstr.fore(Fore.GREEN).append(f"Rules:\t\t")
-        fstr.concatenate(self.rules.fstr()).ret()
-        fstr.unindent().fore(Fore.YELLOW).append("}")
+    def getInfo(self,fstr:Formatted=Formatted())->str:
+        src_str = inspect.getsourcefile(self.function)
+        src_words = src_str.split("\\")
+        if len(src_words)>3:
+            src_str = "...."
+            for i in range(len(src_words)-3,len(src_words)):
+                src_str += "\\"+src_words[i]
+        fstr.style(Style.NORMAL).fore(Fore.YELLOW).append(f"Operator('{self.name}'):")
+        fstr.ret().indent().fore(Fore.GREEN)
+        fstr.append(f"Function: ").fore(Fore.CYAN).append(f"`{self.function.__name__}`, defined in: {src_str}, @ line {inspect.getsourcelines(self.function)[1]}").ret().dropFore()
+        fstr.append(f"Rules:").ret().indent()
+        self.rules.fstr(fstr)
+        fstr.ret().unindent().dropFore().dropFore()
         return str(fstr)
     def __repr__(self):
         return re.sub(r"\s+","", self.getInfo())
