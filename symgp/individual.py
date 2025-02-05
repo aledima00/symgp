@@ -16,10 +16,10 @@ class Node:
         return self.operator(*[child.evaluate() for child in self.children])
     def fstr(self)->Formatted:
         fstr = Formatted()
-        fstr.fore(Fore.CYAN).append(f"Node(").concatenate(self.operator.fstr())
+        fstr.fore(Fore.WHITE).append(f"(").concatenate(self.operator.fstr())
         for child in self.children:
-            fstr.fore(Fore.CYAN).append(", ").concatenate(child.fstr())
-        fstr.fore(Fore.CYAN).append(")")
+            fstr.fore(Fore.WHITE).append(", ").concatenate(child.fstr())
+        fstr.fore(Fore.WHITE).append(")")
         return fstr
     def tree_fstr(self,depth=0, ended_levels=dict())->Formatted:
         fstr = Formatted()
@@ -53,7 +53,7 @@ class Leaf(Node):
         return self.value
     def fstr(self):
         fstr = Formatted()
-        fstr.fore(Fore.GREEN).append(f"Leaf({self.value})")
+        fstr.fore(Fore.GREEN).append(str(self.value))
         return fstr
     def tree_fstr(self,depth=0,ended_levels=dict())->Formatted:
         fstr = Formatted()

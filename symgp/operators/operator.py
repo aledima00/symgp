@@ -24,7 +24,7 @@ class Operator:
         return self.name == other.name
     def fstr(self)->Formatted:
         fstr = Formatted()
-        fstr.fore(Fore.YELLOW).append(f"Operator('{self.name}')")
+        fstr.fore(Fore.YELLOW).append(self.name)
         return fstr
     def getInfo(self)->str:
         fstr = Formatted()
