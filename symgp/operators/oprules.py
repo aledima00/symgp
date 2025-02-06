@@ -11,7 +11,7 @@ class OpRules:
 
     arity:int
 
-    __inputs_specs: _List[_Specs] # fixed specifications for inputs
+    __input_specs: _List[_Specs] # fixed specifications for inputs
     output_specs: _Specs # fixed specifications for output
 
     output_rules:_List[_OCR] # rules to compute output specs given input specs
