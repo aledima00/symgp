@@ -6,12 +6,10 @@ from colorama import Fore
 class Node:
     operator:Operator # operator used in the node
     input_children:List['Node'] # list of children used as inputs for the operator
-    value:any # only used for Leaf Nodes
 
     def __init__(self, operator:Operator, children:List['Node']):
         self.children = children
         self.operator = operator
-        self.value = None
     def evaluate(self):
         return self.operator(*[child.evaluate() for child in self.children])
     def fstr(self,fstr:Formatted=Formatted())->Formatted:
@@ -43,13 +41,12 @@ class Node:
         return str(self)
 
 class Leaf(Node):
-    def __init__(self, value=None):
+    def __init__(self, value):
+        # no operator nor children for a leaf
         self.operator = None
         self.children = []
         self.value = value
     def evaluate(self):
-        if self.value is None:
-            raise ValueError("Leaf value is not set")
         return self.value
     def fstr(self,fstr:Formatted=Formatted()):
         fstr.append(str(self.value),fore=Fore.GREEN)
@@ -63,10 +60,25 @@ class Leaf(Node):
         self.fstr(fstr)
         fstr.ret()
         return fstr
-    def __str__(self):
-        return f"Leaf({self.value})"
-    def __repr__(self):
-        return str(self)
+    
+class VarLeaf(Leaf):
+    def __init__(self, name:str):
+        self.name = name
+        self.assigned = False
+        super().__init__(None) # no value
+    def evaluate(self):
+        if not self.assigned:
+            raise ValueError("Leaf value is not set")
+        tempv = self.value
+        self.assigned = False
+        self.value = None
+        return tempv
+    def assign(self,value):
+        self.value = value
+        self.assigned = True
+    def fstr(self,fstr:Formatted=Formatted()):
+        fstr.append(f"{self.name}",fore=Fore.CYAN)
+        return fstr
 
 
 class IndividualTree:
@@ -74,16 +86,16 @@ class IndividualTree:
     root:Node
     numInputs:int
     
-    def __init__(self, root:Node, inputLeaves:list["Node"]=[]):
+    def __init__(self, root:Node, inputLeaves:List["VarLeaf"]=[]):
         self.root = root
         self.numInputs = len(inputLeaves)
-        self.inputLeaves = inputLeaves
+        self.inputLeaves:List[VarLeaf] = inputLeaves
 
     def evaluate(self,inputValues):
         if len(inputValues) != self.numInputs:
             raise ValueError("Input length does not match")
         for i in range(self.numInputs):
-            self.inputLeaves[i].value = inputValues[i]
+            self.inputLeaves[i].assign(inputValues[i])
         return self.root.evaluate()
     
-__all__ = ["Node", "Leaf", "IndividualTree"]
+__all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]
