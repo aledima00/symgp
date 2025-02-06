@@ -13,6 +13,7 @@ keywords = ["python", "library", "symreg", "genetic programming", "symbolic regr
 python = "^3.12"
 colorama = "^0.4.6"
 consoleformat = {git = "https://github.com/aledima00/ConsoleFormat.git"}
+numpy = "^2.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

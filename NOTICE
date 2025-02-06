@@ -7,6 +7,10 @@ You may obtain a copy of the License in the LICENSE file distributed with this w
 
 This product includes third-party software, which is distributed under their own licenses:
 
+  - NumPy 
+    License: BSD (https://numpy.org/license.html)
+    Website: https://numpy.org/
+
   - Colorama 
     License: BSD (https://github.com/tartley/colorama/blob/main/LICENSE)
     Website: https://github.com/tartley/colorama
