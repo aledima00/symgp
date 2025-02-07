@@ -10,16 +10,21 @@ class Model:
     max_depth:int
     population_size:int
 
-    Fset:_LST[_op] # Fset is the set of functions that can be used in the model
-    Tset:_LST[_op] # Tset is the set of terminal nodes, which are the input leaves and constants
+    # Fset is the set of functions that can be used to grow the trees
+    unaryFset:_LST[_op] # unary functions
+    naryFset:_LST[_op] # n-ary functions
 
-    # Tset is the set of terminal nodes, which are the input leaves and constantss
+    # Tset is the set of terminal nodes, which are the input leaves and constants
     inputLeaves:_LST[VarLeaf] # actual inputs
-    c_prop:float # random constants proportion
+    c_prop:float # proportion of constants to input leaves in the terminal set
+    unary_prop:float # proportion of drawing unary functions to drawing n-ary functions when growing a tree
 
     rng:np.random.Generator
+
+    __population:_LST[IndividualTree]
+
     
-    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],inputLeaves:list[VarLeaf],*,c_prop:float=0.3,rand_seed:int=_secret_recipe):
+    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],inputLeaves:list[VarLeaf],*,c_prop:float=0.3,rand_seed:int=_secret_recipe,unary_prop:float=0.5):
         """
         Initializes the model with the given parameters.
         Args:
@@ -27,14 +32,19 @@ class Model:
             Fset (list[_op]): A list of function set operations.
             inputLeaves (list[VarLeaf]): A list of input leaves (variables).
             c_prop (float, optional): The proportion of constants to input leaves. Defaults to 0.4.
+            rand_seed (int, optional): The random seed. Defaults to 12345.
+            unary_prop (float, optional): The proportion of drawing unary functions to drawing n-ary functions when growing a tree. Defaults to 0.5.
         """
         
         self.max_depth = max_depth
         self.population_size = population_size
-        self.Fset = Fset
+        self.unaryFset = [op for op in Fset if npf.is_unary(op)]
+        self.naryFset = [op for op in Fset if npf.is_nary(op)]
         self.inputLeaves = inputLeaves
         self.c_prop = c_prop
+        self.unary_prop = unary_prop        
         self.rng = np.random.Generator(np.random.PCG64([rand_seed]))
+        self.__population = []
 
     def __grow(self,curr_depth=0)->IndividualTree:
         """
@@ -48,7 +58,10 @@ class Model:
                 return Leaf(self.rng.random())
             else:
                 return self.rng.choice(self.inputLeaves)
-        op = self.rng.choice(self.Fset)
+        if self.rng.random() < self.unary_prop:
+            op = self.rng.choice(self.unaryFset)
+        else:
+            op = self.rng.choice(self.naryFset)
         children = []
         for i in range(op.arity):
             children.append(self.__grow(curr_depth+1))
@@ -58,6 +71,28 @@ class Model:
         else:
             return curr_node
         
+    def populate(self):
+        """
+        Populates the model with a new generation of individual trees.
+        Returns:
+            list[IndividualTree]: A list of new individual trees.
+        """
+        self.__population= [self.__grow() for _ in range(self.population_size)]
+    
+    def kill(self):
+        """
+        Kills the current population of the model.
+        """
+        self.__population = []
+
+    def population(self):
+        """
+        Returns the current population of the model.
+        Returns:
+            list[IndividualTree]: The current population of the model.
+        """
+        return self.__population
+    
     def sample(self):
         """
         Samples a new individual tree from the model.
@@ -65,6 +100,11 @@ class Model:
             IndividualTree: A new individual tree.
         """
         return self.__grow()
+    
+    def __getitem__(self,idx):
+        return self.__population[idx]
+    def __iter__(self):
+        return iter(self.__population)
 
 class BaseModel(Model):
     def __init__(self,max_depth:int,population_size:int,inputLeaves:list[VarLeaf],*,c_prop:float=0.3,rand_seed:int=_secret_recipe):
