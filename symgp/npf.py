@@ -1,315 +1,154 @@
 ## this section is dedicated to implementations of the most common numpy functions
 import numpy as np
-from .operators import Operator, OpRules, DataTypes
+from . import Operator
 
 # Define the operators
 add = Operator(
     "add",
-    lambda a,b: np.add(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM,DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda a, b: np.add(a, b)
 )
 
 sub = Operator(
     "sub",
-    lambda a,b: np.subtract(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM,DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda a, b: np.subtract(a, b)
 )
 
 mul = Operator(
     "mul",
-    lambda a,b: np.multiply(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM,DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda a, b: np.multiply(a, b)
 )
 
 div = Operator(
     "div",
-    lambda a,b: np.divide(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM,DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda a, b: np.divide(a, b)
 )
 
 pow = Operator(
     "pow",
-    lambda a,b: np.power(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM,DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda a, b: np.power(a, b)
 )
 
 log = Operator(
     "log",
-    lambda x, b: np.log(x) / np.log(b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda x, b: np.log(x) / np.log(b)
 )
 
 sin = Operator(
     "sin",
-    lambda x: np.sin(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.sin(x)
 )
 
 cos = Operator(
     "cos",
-    lambda x: np.cos(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.cos(x)
 )
 
 tan = Operator(
     "tan",
-    lambda x: np.tan(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.tan(x)
 )
 
 arcsin = Operator(
     "arcsin",
-    lambda x: np.arcsin(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.arcsin(x)
 )
 
 arccos = Operator(
     "arccos",
-    lambda x: np.arccos(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.arccos(x)
 )
 
 arctan = Operator(
     "arctan",
-    lambda x: np.arctan(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.arctan(x)
 )
 
 sinh = Operator(
     "sinh",
-    lambda x: np.sinh(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.sinh(x)
 )
 
 cosh = Operator(
     "cosh",
-    lambda x: np.cosh(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.cosh(x)
 )
 
 tanh = Operator(
     "tanh",
-    lambda x: np.tanh(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.tanh(x)
 )
 
 arcsinh = Operator(
     "arcsinh",
-    lambda x: np.arcsinh(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.arcsinh(x)
 )
 
 arccosh = Operator(
     "arccosh",
-    lambda x: np.arccosh(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.arccosh(x)
 )
 
 arctanh = Operator(
     "arctanh",
-    lambda x: np.arctanh(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.arctanh(x)
 )
 
 abs = Operator(
     "abs",
-    lambda x: np.abs(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.abs(x)
 )
 
 sign = Operator(
     "sign",
-    lambda x: np.sign(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.sign(x)
 )
 
 floor = Operator(
     "floor",
-    lambda x: np.floor(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.floor(x)
 )
 
 ceil = Operator(
     "ceil",
-    lambda x: np.ceil(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.ceil(x)
 )
 
 round = Operator(
     "round",
-    lambda x: np.round(x),
-    OpRules(
-        arity=1,
-        input_types=[DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=1,
+    func=lambda x: np.round(x)
 )
 
 maximum = Operator(
     "maximum",
-    lambda a,b: np.maximum(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda a, b: np.maximum(a, b)
 )
 
 minimum = Operator(
     "minimum",
-    lambda a,b: np.minimum(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.NUM
-    )
+    arity=2,
+    func=lambda a, b: np.minimum(a, b)
 )
-
-equal = Operator(
-    "equal",
-    lambda a,b: np.equal(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.BOOL
-    )
-)
-
-not_equal = Operator(
-    "not_equal",
-    lambda a,b: np.not_equal(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.BOOL
-    )
-)
-
-less = Operator(
-    "less",
-    lambda a,b: np.less(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.BOOL
-    )
-)
-
-less_equal = Operator(
-    "less_equal",
-    lambda a,b: np.less_equal(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.BOOL
-    )
-)
-
-greater = Operator(
-    "greater",
-    lambda a,b: np.greater(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.BOOL
-    )
-)
-
-greater_equal = Operator(
-    "greater_equal",
-    lambda a,b: np.greater_equal(a,b),
-    OpRules(
-        arity=2,
-        input_types=[DataTypes.NUM, DataTypes.NUM],
-        output_type=DataTypes.BOOL
-    )
-)
-

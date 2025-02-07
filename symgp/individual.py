@@ -1,4 +1,4 @@
-from .operators import Operator
+from . import Operator
 from typing import List
 from consoleformat import Formatted
 from colorama import Fore
