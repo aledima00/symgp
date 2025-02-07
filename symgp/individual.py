@@ -48,7 +48,7 @@ class Leaf(Node):
         self.value = value
     def evaluate(self):
         return self.value
-    def fstr(self,fstr:Formatted=Formatted()):
+    def fstr(self,fstr:Formatted=Formatted())->Formatted:
         fstr.append(str(self.value),fore=Fore.GREEN)
         return fstr
     def tree_fstr(self,depth=0,ended_levels=dict(),fstr:Formatted=Formatted())->Formatted:
@@ -76,7 +76,7 @@ class VarLeaf(Leaf):
     def assign(self,value):
         self.value = value
         self.assigned = True
-    def fstr(self,fstr:Formatted=Formatted()):
+    def fstr(self,fstr:Formatted=Formatted())->Formatted:
         fstr.append(f"{self.name}",fore=Fore.CYAN)
         return fstr
 
@@ -97,5 +97,9 @@ class IndividualTree:
         for i in range(self.numInputs):
             self.inputLeaves[i].assign(inputValues[i])
         return self.root.evaluate()
+    def tree_fstr(self)->Formatted:
+        return self.root.tree_fstr()
+    def fstr(self)->Formatted:
+        return self.root.fstr()
     
 __all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]
