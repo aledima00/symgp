@@ -19,7 +19,9 @@ class Operator:
     def __call__(self, *args):
         assert len(args) == self.arity, f"Operator '{self.name}' expects {self.arity} arguments, got {len(args)}"
         return self.function(*args)
-    def fstr(self,fstr:Formatted=Formatted())->Formatted:
+    def fstr(self,fstr:Formatted=None)->Formatted:
+        if fstr is None:
+            fstr = Formatted()
         fstr.append(self.name,fore=Fore.YELLOW)
         return fstr
     def getInfo(self)->str:

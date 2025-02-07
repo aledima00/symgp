@@ -12,7 +12,9 @@ class Node:
         self.operator = operator
     def evaluate(self):
         return self.operator(*[child.evaluate() for child in self.children])
-    def fstr(self,fstr:Formatted=Formatted())->Formatted:
+    def fstr(self,fstr:Formatted=None)->Formatted:
+        if fstr is None:
+            fstr = Formatted()
         fstr.append(f"(")
         self.operator.fstr(fstr)
         for child in self.children:
@@ -20,7 +22,9 @@ class Node:
             child.fstr(fstr)
         fstr.append(")")
         return fstr
-    def tree_fstr(self,depth=0, ended_levels=dict(),fstr:Formatted=Formatted())->Formatted:
+    def tree_fstr(self,depth=0, ended_levels=dict(),fstr:Formatted=None)->Formatted:
+        if fstr is None:
+            fstr = Formatted()
         if depth not in ended_levels:
             ended_levels[depth] = False
         if depth>0:
@@ -41,10 +45,13 @@ class Node:
         return fstr
     
     def subnodes(self):
-        return [child for child in self.children]+[child.subnodes() for child in self.children]
+        sn = [child for child in self.children]
+        for child in self.children:
+            sn += child.subnodes()
+        return sn
     
     def __str__(self):
-        str(self.fstr())
+        return str(self.fstr())
     def __repr__(self):
         return str(self)
 
@@ -56,10 +63,14 @@ class Leaf(Node):
         self.value = value
     def evaluate(self):
         return self.value
-    def fstr(self,fstr:Formatted=Formatted())->Formatted:
+    def fstr(self,fstr:Formatted=None)->Formatted:
+        if fstr is None:
+            fstr = Formatted()
         fstr.append(str(self.value),fore=Fore.GREEN)
         return fstr
-    def tree_fstr(self,depth=0,ended_levels=dict(),fstr:Formatted=Formatted())->Formatted:
+    def tree_fstr(self,depth=0,ended_levels=dict(),fstr:Formatted=None)->Formatted:
+        if fstr is None:
+            fstr = Formatted()
         if depth not in ended_levels:
             ended_levels[depth] = False
         for i in range(1,depth):
@@ -70,6 +81,8 @@ class Leaf(Node):
         return fstr
     def subnodes(self):
         return []
+    def __str__(self):
+        return str(self.fstr())
     
 class VarLeaf(Leaf):
     def __init__(self, name:str):
@@ -86,9 +99,13 @@ class VarLeaf(Leaf):
     def assign(self,value):
         self.value = value
         self.assigned = True
-    def fstr(self,fstr:Formatted=Formatted())->Formatted:
+    def fstr(self,fstr:Formatted=None)->Formatted:
+        if fstr is None:
+            fstr = Formatted()
         fstr.append(f"{self.name}",fore=Fore.CYAN)
         return fstr
+    def __str__(self):
+        return str(self.fstr())
 
 
 class IndividualTree:
