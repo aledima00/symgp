@@ -45,9 +45,10 @@ class Node:
         return fstr
     
     def subnodes(self):
-        sn = [child for child in self.children]
+        sn = [child for child in self.children if not isinstance(child,Leaf)]
         for child in self.children:
-            sn += child.subnodes()
+            if not isinstance(child,Leaf):
+                sn += child.subnodes()
         return sn
     
     def __str__(self):
@@ -66,7 +67,7 @@ class Leaf(Node):
     def fstr(self,fstr:Formatted=None)->Formatted:
         if fstr is None:
             fstr = Formatted()
-        fstr.append(str(self.value),fore=Fore.GREEN)
+        fstr.append(f"{self.value:.03f}",fore=Fore.GREEN)
         return fstr
     def tree_fstr(self,depth=0,ended_levels=dict(),fstr:Formatted=None)->Formatted:
         if fstr is None:
