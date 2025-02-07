@@ -33,6 +33,10 @@ class Node:
             is_last = i == len(self.children)-1
             if is_last:
                 ended_levels[depth+1] = True
+            else:
+                for k in ended_levels.keys():
+                    if k>depth:
+                        ended_levels[k] = False
             child.tree_fstr(depth+1, ended_levels,fstr=fstr)
         return fstr
     def __str__(self):
