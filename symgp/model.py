@@ -68,6 +68,6 @@ class Model:
 
 class BaseModel(Model):
     def __init__(self,max_depth:int,population_size:int,inputLeaves:list[VarLeaf],*,c_prop:float=0.3,rand_seed:int=_secret_recipe):
-        super().__init__(max_depth=max_depth,population_size=population_size,Fset=[getattr(npf, func) for func in dir(npf) if isinstance(getattr(npf, func), _op)],inputLeaves=inputLeaves,c_prop=c_prop,rand_seed=rand_seed)
+        super().__init__(max_depth=max_depth,population_size=population_size,Fset=npf.get_all(),inputLeaves=inputLeaves,c_prop=c_prop,rand_seed=rand_seed)
 
 __all__ = ["Model","BaseModel"]

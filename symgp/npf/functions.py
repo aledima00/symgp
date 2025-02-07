@@ -1,6 +1,6 @@
 ## this section is dedicated to implementations of the most common numpy functions
 import numpy as np
-from . import Operator
+from .. import Operator
 
 # Define the operators
 add = Operator(
