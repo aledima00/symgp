@@ -1,8 +1,7 @@
 from typing import List as _List
-from .specifications import Specs as _Specs, ShapeTypes as _ST, DataTypes as _DT
-from .rules import OUTPUT_COMPUTE_RULES as _OCR, INPUT_BINARY_CHECKS as _IBC
 from colorama import Fore
 from consoleformat import Formatted
+from .datatypes import DataType as _DTYP
 
 class OpRules:
     """
@@ -10,116 +9,34 @@ class OpRules:
     """
 
     arity:int
+    input_types: _List[_DTYP] # fixed specifications for inputs
+    output_type: _DTYP # fixed specifications for output
+    
 
-    __input_specs: _List[_Specs] # fixed specifications for inputs
-    output_specs: _Specs # fixed specifications for output
-
-    output_rules:_List[_OCR] # rules to compute output specs given input specs
-    input_check_rules:_List[_IBC] # rules to check input specs additional constraints
-
-    __actual_inputs_specs:_List[_Specs] # actual input specs (when node is connected to other nodes)
-
-
-    def __init__(self, arity:int, inputs_specs:_List[_Specs]=None, output_specs:_Specs=None, output_rules:_List[_OCR]=[], input_binary_checks:_List[_IBC]=[]):
+    def __init__(self, arity:int, input_types:_List[_DTYP]=None, output_type:_DTYP=None):
         self.arity = arity
-
-        self.__input_specs = inputs_specs if inputs_specs is not None else [_Specs() for _ in range(arity)]
-        self.output_specs = output_specs if output_specs is not None else _Specs()
-        
-        self.output_rules = output_rules
-        self.input_binary_checks = input_binary_checks
-
-        self.__actual_inputs_specs = None
-
-        self.__update_output_specs()
-
-    def getInputSpecs(self)->_List[_Specs]:
-        return self.__actual_inputs_specs if self.__actual_inputs_specs is not None else self.__input_specs
-
-    def setActualInputsSpecs(self, actual_inputs_specs:_List[_Specs])->bool:
-        if self.check_actual_inputs_specs(actual_inputs_specs):
-            return False
-        self.__actual_inputs_specs = actual_inputs_specs
-        self.__update_output_specs()
-        return True
-        
-    def check_actual_inputs_specs(self, actual_inputs_specs:_List[_Specs])->bool:
-        assert len(actual_inputs_specs) == self.arity, f"Expected {self.arity} inputs, got {len(actual_inputs_specs)}"
-        for i in range(self.arity):
-            if not self.__input_specs[i].check_compatibility(actual_inputs_specs[i]):
-                return False
-        return True
+        self.input_types = input_types if input_types is not None else [_DTYP() for _ in range(arity)]
+        self.output_type = output_type if output_type is not None else _DTYP()
     
-    def clearActualInputsSpecs(self):
-        self.__actual_inputs_specs = None
-        self.__update_output_specs()
+    def fstr(self,fstr:Formatted=Formatted())->Formatted:
 
-    def __update_output_specs(self):
-        input_specs = self.getInputSpecs()
-        for rule in self.output_rules:
-            if rule == _OCR.INHERIT_SHAPE_TYPE:
-                self.output_specs.shape_type = input_specs[0].shape_type
-            elif rule == _OCR.INHERIT_DATA_TYPE:
-                self.output_specs.data_type = input_specs[0].data_type
-            elif rule == _OCR.INHERIT_SHAPE:
-                if input_specs[0].shape_type == _ST.NPARRAY:
-                    self.output_specs.shape = input_specs[0].shape
-            elif rule == _OCR.TRANSPOSE_SHAPE:
-                if input_specs[0].shape_type == _ST.NPARRAY:
-                    self.output_specs.shape = input_specs[0].shape[::-1]
-            elif rule == _OCR.MATMUL_SHAPE:
-                if input_specs[0].shape_type == _ST.NPARRAY and input_specs[1].shape_type == _ST.NPARRAY:
-                    self.output_specs.shape = (input_specs[0].shape[0], input_specs[1].shape[1])
-            else:
-                raise ValueError(f"Invalid output rule {rule}")
-            
-    def check_inputs_specs(self):
-        input_specs = self.getInputSpecs()
-        for rule in self.input_binary_checks:
-            if rule == _IBC.SAME_SHAPE_TYPE:
-                if input_specs[0].shape_type != input_specs[1].shape_type:
-                    return False
-            elif rule == _IBC.SAME_DATA_TYPE:
-                if input_specs[0].data_type != input_specs[1].data_type:
-                    return False
-            elif rule == _IBC.SAME_SHAPE:
-                if input_specs[0].shape_type == _ST.NPARRAY and input_specs[1].shape_type == _ST.NPARRAY:
-                    if input_specs[0].shape != input_specs[1].shape:
-                        return False
-            elif rule == _IBC.TRANSPOSED_SHAPE:
-                if input_specs[0].shape_type == _ST.NPARRAY and input_specs[1].shape_type == _ST.NPARRAY:
-                    if input_specs[0].shape != input_specs[1].shape[::-1]:
-                        return False
-            else:
-                raise ValueError(f"Invalid input check rule {rule}")
-        return True
-    
-    def fstr(self,fstr:Formatted=Formatted()):
-        ibc_names = str([item.name for item in self.input_binary_checks])
-        ocr_names = str([item.name for item in self.output_rules])
-
-        is_is_actual = self.__actual_inputs_specs is not None
-        input_specs = self.__actual_inputs_specs if is_is_actual else self.__input_specs
-
-        fstr.append(f"ARITY: ").fore(Fore.CYAN).append(f"{self.arity}").ret().dropFore()
-        fstr.append(f"INPUTS_SPECS(").append(f"{"ACTUAL" if is_is_actual else "BASE"}",fore=Fore.YELLOW).append(")")
+        fstr.append(f"ARITY: ").fore(Fore.CYAN).append(f"{self.arity}").ret()
+        fstr.dropFore().append("INPUT_TYPES:")
         
         ## start of input specs
         fstr.fore(Fore.CYAN).append("[").ret().indent()
         
         
         for i in range(self.arity):
-            input_specs[i].fstr(fstr)
+            self.input_types[i].fstr(fstr)
             if i != self.arity-1:
                 fstr.append(",")
             fstr.ret()
         fstr.unindent().append("]").dropFore().ret()
         ## end of input specks
         
-        fstr.append(f"OUTPUT_SPECS:\t\t")
-        self.output_specs.fstr(fstr).ret()
-        fstr.append(f"OUTPUT_RULES:\t\t").fore(Fore.CYAN).append(ocr_names).ret().dropFore()
-        fstr.append(f"INPUT_BINARY_CHECKS:\t").fore(Fore.CYAN).append(ibc_names).ret().dropFore()
+        fstr.append(f"OUTPUT_TYPE:\t\t")
+        self.output_type.fstr(fstr).ret()
         fstr.unindent().ret()
         return fstr
     def __str__(self):
