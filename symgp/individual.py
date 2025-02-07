@@ -39,6 +39,10 @@ class Node:
                         ended_levels[k] = False
             child.tree_fstr(depth+1, ended_levels,fstr=fstr)
         return fstr
+    
+    def subnodes(self):
+        return [child for child in self.children]+[child.subnodes() for child in self.children]
+    
     def __str__(self):
         str(self.fstr())
     def __repr__(self):
@@ -64,6 +68,8 @@ class Leaf(Node):
         self.fstr(fstr)
         fstr.ret()
         return fstr
+    def subnodes(self):
+        return []
     
 class VarLeaf(Leaf):
     def __init__(self, name:str):
@@ -86,11 +92,11 @@ class VarLeaf(Leaf):
 
 
 class IndividualTree:
-    inputLeaves:list["Node"]
+    inputLeaves:List[Node]
     root:Node
     numInputs:int
     
-    def __init__(self, root:Node, inputLeaves:List["VarLeaf"]=[]):
+    def __init__(self, root:Node, inputLeaves:List[VarLeaf]=[]):
         self.root = root
         self.numInputs = len(inputLeaves)
         self.inputLeaves:List[VarLeaf] = inputLeaves
@@ -105,5 +111,8 @@ class IndividualTree:
         return self.root.tree_fstr()
     def fstr(self)->Formatted:
         return self.root.fstr()
+    
+    def subnodes(self):
+        return self.root.subnodes()
     
 __all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]
