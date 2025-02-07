@@ -48,7 +48,7 @@ class Node:
         sn = [child for child in self.children if (keep_leaves or not isinstance(child,Leaf))]
         for child in self.children:
             if keep_leaves or not isinstance(child,Leaf):
-                sn += child.subnodes()
+                sn += child.subnodes(keep_leaves)
         return sn
     
     def __str__(self):
