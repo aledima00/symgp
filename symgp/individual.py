@@ -44,10 +44,10 @@ class Node:
             child.tree_fstr(depth+1, ended_levels,fstr=fstr)
         return fstr
     
-    def subnodes(self):
-        sn = [child for child in self.children if not isinstance(child,Leaf)]
+    def subnodes(self,keep_leaves:bool=True):
+        sn = [child for child in self.children if (keep_leaves or not isinstance(child,Leaf))]
         for child in self.children:
-            if not isinstance(child,Leaf):
+            if keep_leaves or not isinstance(child,Leaf):
                 sn += child.subnodes()
         return sn
     
@@ -130,7 +130,7 @@ class IndividualTree:
     def fstr(self)->Formatted:
         return self.root.fstr()
     
-    def subnodes(self):
-        return self.root.subnodes()
+    def subnodes(self,keep_leaves:bool=True):
+        return self.root.subnodes(keep_leaves)
     
 __all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]
