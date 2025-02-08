@@ -2,6 +2,7 @@ from . import Operator
 from typing import List
 from consoleformat import Formatted
 from colorama import Fore
+from typing import Dict as _DCT
 
 class Node:
     operator:Operator # operator used in the node
@@ -54,6 +55,9 @@ class Node:
     def depth(self):
         return 1 + max([child.depth() for child in self.children])
     
+    def deepCopy(self):
+        return Node(self.operator,[child.deepCopy() for child in self.children])
+    
     def __str__(self):
         return str(self.fstr())
     def __repr__(self):
@@ -87,6 +91,8 @@ class Leaf(Node):
         return []
     def depth(self):
         return 1
+    def deepCopy(self):
+        return Leaf(self.value)
     def __str__(self):
         return str(self.fstr())
     
@@ -110,34 +116,41 @@ class VarLeaf(Leaf):
             fstr = Formatted()
         fstr.append(f"{self.name}",fore=Fore.CYAN)
         return fstr
+    def deepCopy(self):
+        return VarLeaf(self.name)
     def __str__(self):
         return str(self.fstr())
 
 
 class IndividualTree:
-    inputLeaves:List[Node]
+    inputLeaves:_DCT[str,VarLeaf]
     root:Node
     numInputs:int
     
     def __init__(self, root:Node, inputLeaves:List[VarLeaf]=[]):
         self.root = root
         self.numInputs = len(inputLeaves)
-        self.inputLeaves:List[VarLeaf] = inputLeaves
+        self.inputLeaves = dict((il.name,il) for il in inputLeaves)
 
-    def evaluate(self,inputValues):
-        if len(inputValues) != self.numInputs:
+    def evaluate(self,kv_inputs:_DCT[str,object]):
+        if len(kv_inputs) != self.numInputs:
             raise ValueError("Input length does not match")
-        for i in range(self.numInputs):
-            self.inputLeaves[i].assign(inputValues[i])
+        for k,v in kv_inputs.items():
+            self.inputLeaves[k].assign(v)
         return self.root.evaluate()
     def tree_fstr(self)->Formatted:
         return self.root.tree_fstr()
     def fstr(self)->Formatted:
         return self.root.fstr()
     
-    def subnodes(self,keep_leaves:bool=True):
-        return self.root.subnodes(keep_leaves)
+    def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
+        sn = self.root.subnodes(keep_leaves)
+        if keep_root:
+            sn = [self.root] + sn
+        return sn
     def depth(self):
         return self.root.depth()
+    def deepCopy(self):
+        return IndividualTree(self.root.deepCopy(),inputLeaves=[il.deepCopy() for il in self.inputLeaves])
     
 __all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]

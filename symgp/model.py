@@ -100,6 +100,8 @@ class Model:
             IndividualTree: A new individual tree.
         """
         return self.__grow()
+    def Fset(self):
+        return self.unaryFset+self.naryFset
     
     def __getitem__(self,idx):
         return self.__population[idx]
