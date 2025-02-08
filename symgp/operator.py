@@ -2,6 +2,7 @@ from typing import Callable as _Callable
 from consoleformat import Formatted
 from colorama import Fore 
 import inspect
+import numpy as np
 
 class Operator:
     """
@@ -18,7 +19,9 @@ class Operator:
         self.arity = arity
     def __call__(self, *args):
         assert len(args) == self.arity, f"Operator '{self.name}' expects {self.arity} arguments, got {len(args)}"
-        return self.function(*args)
+        with np.errstate(invalid='ignore', divide='ignore', over='ignore'):
+            return self.function(*args)
+        
     def fstr(self,fstr:Formatted=None)->Formatted:
         if fstr is None:
             fstr = Formatted()
