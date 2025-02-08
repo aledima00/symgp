@@ -133,7 +133,7 @@ class IndividualTree:
         self.numInputs = len(inputLeaves)
         self.inputLeaves = dict((il.name,il) for il in inputLeaves)
 
-    def evaluate(self,kv_inputs:_DCT[str,object]):
+    def evaluate_sample(self,kv_inputs:_DCT[str,object]):
         if len(kv_inputs) != self.numInputs:
             raise ValueError("Input length does not match")
         for k,v in kv_inputs.items():
@@ -143,6 +143,18 @@ class IndividualTree:
         return self.root.tree_fstr()
     def fstr(self)->Formatted:
         return self.root.fstr()
+    
+    def evaluate(self,inputs:np.ndarray,order:_LS[str])->np.ndarray:
+        assert inputs.shape[0] == self.numInputs, "Input length does not match"
+        assert len(inputs.shape) == 2, "Input must be 2D, shape=(num_inputs,num_samples)"
+        assert len(order) == self.numInputs, "Input order does not match"
+        for i,k in enumerate(order):
+            self.inputLeaves[k].assign(inputs[i])
+        return self.root.evaluate()
+    
+    def mse(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str]):
+        out = self.evaluate(inputs,order)
+        return np.mean((out-outputs)**2)
     
     def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
         sn = self.root.subnodes(keep_leaves)
