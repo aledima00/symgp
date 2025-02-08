@@ -2,7 +2,8 @@ from . import Operator
 from typing import List
 from consoleformat import Formatted
 from colorama import Fore
-from typing import Dict as _DCT
+from typing import Dict as _DCT, List as _LS
+import numpy as np
 
 class Node:
     operator:Operator # operator used in the node
@@ -104,13 +105,13 @@ class VarLeaf(Leaf):
     def evaluate(self):
         if not self.assigned:
             raise ValueError("Leaf value is not set")
-        tempv = self.value
-        self.assigned = False
-        self.value = None
-        return tempv
+        return self.value
     def assign(self,value):
         self.value = value
         self.assigned = True
+    def unassign(self):
+        self.assigned = False
+        self.value = None
     def fstr(self,fstr:Formatted=None)->Formatted:
         if fstr is None:
             fstr = Formatted()
