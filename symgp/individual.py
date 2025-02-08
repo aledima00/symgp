@@ -51,6 +51,9 @@ class Node:
                 sn += child.subnodes(keep_leaves)
         return sn
     
+    def depth(self):
+        return 1 + max([child.depth() for child in self.children])
+    
     def __str__(self):
         return str(self.fstr())
     def __repr__(self):
@@ -82,6 +85,8 @@ class Leaf(Node):
         return fstr
     def subnodes(self):
         return []
+    def depth(self):
+        return 1
     def __str__(self):
         return str(self.fstr())
     
@@ -132,5 +137,7 @@ class IndividualTree:
     
     def subnodes(self,keep_leaves:bool=True):
         return self.root.subnodes(keep_leaves)
+    def depth(self):
+        return self.root.depth()
     
 __all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]
