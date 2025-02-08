@@ -151,6 +151,6 @@ class IndividualTree:
     def depth(self):
         return self.root.depth()
     def deepCopy(self):
-        return IndividualTree(self.root.deepCopy(),inputLeaves=[il.deepCopy() for il in self.inputLeaves])
+        return IndividualTree(self.root.deepCopy(),inputLeaves=[il.deepCopy() for il in self.inputLeaves.values()])
     
 __all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]
