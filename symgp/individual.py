@@ -154,7 +154,13 @@ class IndividualTree:
     
     def mse(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str]):
         out = self.evaluate(inputs,order)
+        # replace nan values from output, using 0 if also output is nan, otherwise np.inf
+        out = np.where(np.isnan(out),np.where(np.isnan(outputs),0,np.inf),out)
         return np.mean((out-outputs)**2)
+    
+    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str]):
+        # implements parsimony pressure
+        return -self.mse(inputs,outputs,order)*(1+self.depth())
     
     def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
         sn = self.root.subnodes(keep_leaves)
