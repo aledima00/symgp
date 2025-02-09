@@ -15,6 +15,7 @@ class PointMut:
             p = self.rng.choice(nodes)
             ops = [op for op in self.Fset if op.arity == p.operator.arity]
             p.operator = self.rng.choice(ops)
+        ret.update_input_leaves()
         return ret
 
 class PermMut:
@@ -29,6 +30,7 @@ class PermMut:
         if len(nary_nodes) != 0:
             p = self.rng.choice(nary_nodes)
             p.children = self.rng.permutation(p.children)
+        ret.update_input_leaves()
         return ret
 
 class HoistMut:
@@ -41,6 +43,7 @@ class HoistMut:
         if len(nodes) != 0:
             p = self.rng.choice(nodes)
             ret.root = p
+        ret.update_input_leaves()
         return ret
 
 class MixedMut:
