@@ -33,4 +33,4 @@ poetry install
 
 This project is licensed under the [Apache License 2.0](LICENSE). Please see the LICENSE file for the full text.
 
-Additional attribution notices for third-party libraries are provided in the [NOTICE](NOTICE) file.
+Additional attribution notices for third-party libraries are provided in the [NOTICE.md](NOTICE.md) file.
