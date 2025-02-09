@@ -49,9 +49,12 @@ class Node:
     def subnodes(self,keep_leaves:bool=True):
         sn = [child for child in self.children if (keep_leaves or not isinstance(child,Leaf))]
         for child in self.children:
-            if keep_leaves or not isinstance(child,Leaf):
+            if not isinstance(child,Leaf):
                 sn += child.subnodes(keep_leaves)
         return sn
+    
+    def expr(self,names:_DCT[str,str]|None=None):
+        return self.operator.solved_expr([child.expr(names=names) for child in self.children])
     
     def depth(self):
         return 1 + max([child.depth() for child in self.children])
@@ -88,10 +91,10 @@ class Leaf(Node):
         self.fstr(fstr)
         fstr.ret()
         return fstr
-    def subnodes(self):
-        return []
     def depth(self):
         return 1
+    def expr(self,names=None):
+        return str(self.value)
     def deepCopy(self):
         return Leaf(self.value)
     def __str__(self):
@@ -118,6 +121,11 @@ class VarLeaf(Leaf):
             fstr = Formatted()
         fstr.append(f"{self.name}",fore=Fore.CYAN)
         return fstr
+    def expr(self,names:_DCT[str,str]=None):
+        if names is None or self.name not in names:
+            return self.name
+        else:
+            return names[self.name]
     def deepCopy(self):
         return VarLeaf(self.name)
     def __str__(self):
@@ -125,20 +133,32 @@ class VarLeaf(Leaf):
 
 
 class IndividualTree:
-    inputLeaves:_DCT[str,VarLeaf]
+    inputLeaves:_DCT[str,_LS[VarLeaf]]
     root:Node
-    numInputs:int
     
-    def __init__(self, root:Node, inputLeaves:List[VarLeaf]=[]):
+    def __init__(self, root:Node):
         self.root = root
-        self.numInputs = len(inputLeaves)
-        self.inputLeaves = {il.name:il for il in inputLeaves}
+        self.numInputs=0
+        self.inputLeaves = dict()
+        self.update_input_leaves()
+
+    def update_input_leaves(self):
+        self.inputLeaves = dict()
+        sn = self.root.subnodes(keep_leaves=True)
+        for n in sn:
+            if isinstance(n,VarLeaf):
+                if n.name not in self.inputLeaves:
+                    self.inputLeaves[n.name] = [n]
+                else:
+                    self.inputLeaves[n.name].append(n)
+        self.numInputs = len(self.inputLeaves)
 
     def evaluate_sample(self,kv_inputs:_DCT[str,object]):
         if len(kv_inputs) != self.numInputs:
             raise ValueError("Input length does not match")
         for k,v in kv_inputs.items():
-            self.inputLeaves[k].assign(v)
+            for il in self.inputLeaves[k]:
+                il.assign(v)
         return self.root.evaluate()
     def tree_fstr(self)->Formatted:
         return self.root.tree_fstr()
@@ -146,11 +166,12 @@ class IndividualTree:
         return self.root.fstr()
     
     def evaluate(self,inputs:np.ndarray,order:_LS[str])->np.ndarray:
-        assert inputs.shape[0] == self.numInputs, "Input length does not match"
         assert len(inputs.shape) == 2, "Input must be 2D, shape=(num_inputs,num_samples)"
-        assert len(order) == self.numInputs, "Input order does not match"
+        assert inputs.shape[0] == len(order), "Input shape does not match the order"
         for i,k in enumerate(order):
-            self.inputLeaves[k].assign(inputs[i])
+            if k in self.inputLeaves:
+                for il in self.inputLeaves[k]:
+                    il.assign(inputs[i])
         return self.root.evaluate()
     
     def mse(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str]):
@@ -158,20 +179,24 @@ class IndividualTree:
         diff= out-outputs
         # replace nan values from output, using 0 if also output is nan, otherwise np.inf
         diff = np.where(np.isnan(diff),np.where(np.isnan(outputs),0,np.inf),diff)
-        return np.mean((diff)**2)
+        with np.errstate(invalid='ignore', divide='ignore', over='ignore'):
+            return np.mean((diff)**2)
     
-    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str]):
+    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str],*,lam:float=10):
         # implements parsimony pressure
-        return -self.mse(inputs,outputs,order)*(1+self.depth())
+        return -self.mse(inputs,outputs,order)+(self.depth())*lam
     
     def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
         sn = self.root.subnodes(keep_leaves)
         if keep_root:
             sn = [self.root] + sn
         return sn
+    
+    def getExpr(self,names:_DCT[str,str]|None=None):
+        return self.root.expr(names=names)
     def depth(self):
         return self.root.depth()
     def deepCopy(self):
-        return IndividualTree(self.root.deepCopy(),inputLeaves=[il.deepCopy() for il in self.inputLeaves.values()])
+        return IndividualTree(self.root.deepCopy())
     
 __all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]

@@ -3,6 +3,8 @@ from .individual import Leaf, VarLeaf, IndividualTree, Node
 import numpy as np
 from typing import List as _LST
 from . import npf
+from .genetic import MixedMut,SubEx
+from tqdm.auto import tqdm
 
 _secret_recipe = 12345
 
@@ -15,13 +17,17 @@ class Model:
     naryFset:_LST[_op] # n-ary functions
 
     # Tset is the set of terminal nodes, which are the input leaves and constants
-    inputLeaves:_LST[VarLeaf] # actual inputs
+    input_leaves_names:_LST[str] # actual inputs
     c_prop:float # proportion of constants to input leaves in the terminal set
     unary_prop:float # proportion of drawing unary functions to drawing n-ary functions when growing a tree
 
     rng:np.random.Generator
 
     __population:_LST[IndividualTree]
+
+    # genetic operators
+    Mop:MixedMut
+    Rop:SubEx
 
     
     def __init__(self,max_depth:int,population_size:int,Fset:list[_op],input_leaves_names:list[str],*,c_prop:float=0.3,rand_seed:int=_secret_recipe,unary_prop:float=0.5):
@@ -30,7 +36,7 @@ class Model:
         Args:
             max_depth (int): The maximum depth of the model.
             Fset (list[_op]): A list of function set operations.
-            inputLeaves (list[VarLeaf]): A list of input leaves (variables).
+            input_leaves_names (list[str]): A list of name of input leaves (variables).
             c_prop (float, optional): The proportion of constants to input leaves. Defaults to 0.4.
             rand_seed (int, optional): The random seed. Defaults to 12345.
             unary_prop (float, optional): The proportion of drawing unary functions to drawing n-ary functions when growing a tree. Defaults to 0.5.
@@ -40,11 +46,13 @@ class Model:
         self.population_size = population_size
         self.unaryFset = [op for op in Fset if npf.is_unary(op)]
         self.naryFset = [op for op in Fset if npf.is_nary(op)]
-        self.inputLeaves = [VarLeaf(name) for name in input_leaves_names]
+        self.input_leaves_names = input_leaves_names
         self.c_prop = c_prop
         self.unary_prop = unary_prop        
         self.rng = np.random.Generator(np.random.PCG64([rand_seed]))
         self.__population = []
+        self.Mop = MixedMut(rng=self.rng,Fset=self.unaryFset+self.naryFset)
+        self.Rop = SubEx(rng=self.rng)
 
     def __grow(self,curr_depth=0)->IndividualTree:
         """
@@ -57,7 +65,7 @@ class Model:
             if self.rng.random() < self.c_prop:
                 return Leaf(self.rng.random())
             else:
-                return self.rng.choice(self.inputLeaves)
+                return VarLeaf(self.rng.choice(self.input_leaves_names))
         if self.rng.random() < self.unary_prop:
             op = self.rng.choice(self.unaryFset)
         else:
@@ -67,7 +75,7 @@ class Model:
             children.append(self.__grow(curr_depth+1))
         curr_node = Node(operator=op,children=children)
         if curr_depth == 0:
-            return IndividualTree(curr_node,inputLeaves=self.inputLeaves)
+            return IndividualTree(curr_node)
         else:
             return curr_node
         
