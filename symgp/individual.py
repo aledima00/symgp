@@ -101,10 +101,11 @@ class VarLeaf(Leaf):
     def __init__(self, name:str):
         self.name = name
         self.assigned = False
+        self.value = None
         super().__init__(None) # no value
     def evaluate(self):
         if not self.assigned:
-            raise ValueError("Leaf value is not set")
+            raise ValueError(f"Leaf value is not set for leaf '{self.name}', value is {self.value}, assigned is {self.assigned}")
         return self.value
     def assign(self,value):
         self.value = value
@@ -131,7 +132,7 @@ class IndividualTree:
     def __init__(self, root:Node, inputLeaves:List[VarLeaf]=[]):
         self.root = root
         self.numInputs = len(inputLeaves)
-        self.inputLeaves = dict((il.name,il) for il in inputLeaves)
+        self.inputLeaves = {il.name:il for il in inputLeaves}
 
     def evaluate_sample(self,kv_inputs:_DCT[str,object]):
         if len(kv_inputs) != self.numInputs:
@@ -154,9 +155,10 @@ class IndividualTree:
     
     def mse(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str]):
         out = self.evaluate(inputs,order)
+        diff= out-outputs
         # replace nan values from output, using 0 if also output is nan, otherwise np.inf
-        out = np.where(np.isnan(out),np.where(np.isnan(outputs),0,np.inf),out)
-        return np.mean((out-outputs)**2)
+        diff = np.where(np.isnan(diff),np.where(np.isnan(outputs),0,np.inf),diff)
+        return np.mean((diff)**2)
     
     def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str]):
         # implements parsimony pressure

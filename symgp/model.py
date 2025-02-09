@@ -24,7 +24,7 @@ class Model:
     __population:_LST[IndividualTree]
 
     
-    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],inputLeaves:list[VarLeaf],*,c_prop:float=0.3,rand_seed:int=_secret_recipe,unary_prop:float=0.5):
+    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],input_leaves_names:list[str],*,c_prop:float=0.3,rand_seed:int=_secret_recipe,unary_prop:float=0.5):
         """
         Initializes the model with the given parameters.
         Args:
@@ -40,7 +40,7 @@ class Model:
         self.population_size = population_size
         self.unaryFset = [op for op in Fset if npf.is_unary(op)]
         self.naryFset = [op for op in Fset if npf.is_nary(op)]
-        self.inputLeaves = inputLeaves
+        self.inputLeaves = [VarLeaf(name) for name in input_leaves_names]
         self.c_prop = c_prop
         self.unary_prop = unary_prop        
         self.rng = np.random.Generator(np.random.PCG64([rand_seed]))
@@ -109,7 +109,7 @@ class Model:
         return iter(self.__population)
 
 class BaseModel(Model):
-    def __init__(self,max_depth:int,population_size:int,inputLeaves:list[VarLeaf],*,c_prop:float=0.3,rand_seed:int=_secret_recipe):
-        super().__init__(max_depth=max_depth,population_size=population_size,Fset=npf.get_all(),inputLeaves=inputLeaves,c_prop=c_prop,rand_seed=rand_seed)
+    def __init__(self,max_depth:int,population_size:int,input_leaves_names:list[str],*,c_prop:float=0.3,rand_seed:int=_secret_recipe):
+        super().__init__(max_depth=max_depth,population_size=population_size,Fset=npf.get_all(),input_leaves_names=input_leaves_names,c_prop=c_prop,rand_seed=rand_seed)
 
 __all__ = ["Model","BaseModel"]
