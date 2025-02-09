@@ -1,4 +1,4 @@
-from ..individual import IndividualTree,Node,Leaf
+from ..individual import IndividualTree,Node,Leaf,VarLeaf
 import numpy as np
 from .. import npf
 from typing import List as _LST
@@ -45,12 +45,26 @@ class HoistMut:
             ret.root = p
         ret.update_input_leaves()
         return ret
+    
+class ConstMut:
+    def __init__(self,*,rng:np.random.Generator):
+        self.name="Constant Mutation Operator"
+        self.rng = rng
+    def __call__(self,it:IndividualTree):
+        ret = it.deepCopy()
+        leaves = ret.subnodes(keep_leaves=True,keep_root=True)
+        leaves = [l for l in leaves if (isinstance(l,Leaf) and not isinstance(l,VarLeaf))]
+        if len(leaves) != 0:
+            p = self.rng.choice(leaves)
+            p.value = self.rng.random()
+        ret.update_input_leaves()
+        return ret
 
 class MixedMut:
     def __init__(self,*,rng:np.random.Generator,Fset:_LST[Node]):
         self.name="Mixed Mutation Operator"
         self.rng = rng
         self.Fset = Fset
-        self.mutops = [PointMut(rng=rng,Fset=Fset),PermMut(rng=rng),HoistMut(rng=rng)]
+        self.mutops = [PointMut(rng=rng,Fset=Fset),PermMut(rng=rng),HoistMut(rng=rng),ConstMut(rng=rng)]
     def __call__(self,it:IndividualTree):
         return self.rng.choice(self.mutops)(it)
