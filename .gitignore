@@ -6,4 +6,5 @@ dist/
 build/
 *.egg-info/
 test*.py
+test*.ipynb
 test*/
