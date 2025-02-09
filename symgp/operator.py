@@ -13,15 +13,29 @@ class Operator:
     name:str
     arity:int
 
-    def __init__(self, name:str, arity:int, func:_Callable):
+    def __init__(self, name:str, arity:int, func:_Callable,expr:str=None):
         self.name = name
         self.function = func
         self.arity = arity
+        if expr is not None:
+            self.expr = expr
+        else:
+            self.expr = f"np.{name}("
+            for i in range(self.arity):
+                self.expr += f"#{i+1}" + ("" if i==self.arity-1 else ",")
+            self.expr += ")"
     def __call__(self, *args):
         assert len(args) == self.arity, f"Operator '{self.name}' expects {self.arity} arguments, got {len(args)}"
         with np.errstate(invalid='ignore', divide='ignore', over='ignore'):
             return self.function(*args)
         
+    def solved_expr(self,args:list)->str:
+        assert len(args) == self.arity, f"Operator '{self.name}' expects {self.arity} arguments, got {len(args)}"
+        ret = self.expr
+        for i in range(self.arity):
+            ret = ret.replace(f"#{i+1}",args[i])
+        return ret
+
     def fstr(self,fstr:Formatted=None)->Formatted:
         if fstr is None:
             fstr = Formatted()
