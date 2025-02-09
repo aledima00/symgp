@@ -12,31 +12,36 @@ add = Operator(
 sub = Operator(
     "sub",
     arity=2,
-    func=lambda a, b: np.subtract(a, b)
+    func=lambda a, b: np.subtract(a, b),
+    expr="np.subtract(#1,#2)"
 )
 
 mul = Operator(
     "mul",
     arity=2,
-    func=lambda a, b: np.multiply(a, b)
+    func=lambda a, b: np.multiply(a, b),
+    expr="np.multiply(#1,#2)"
 )
 
 div = Operator(
     "div",
     arity=2,
-    func=lambda a, b: np.divide(a, b)
+    func=lambda a, b: np.divide(a, b),
+    expr="np.divide(#1,#2)"
 )
 
 pow = Operator(
     "pow",
     arity=2,
-    func=lambda a, b: np.power(a, b)
+    func=lambda a, b: np.power(a, b),
+    expr="np.power(#1,#2)"
 )
 
 log = Operator(
     "log",
     arity=2,
-    func=lambda x, b: np.log(x) / np.log(b)
+    func=lambda x, b: np.log(x) / np.log(b),
+    expr="np.log(#1)/np.log(#2)"
 )
 
 sin = Operator(
