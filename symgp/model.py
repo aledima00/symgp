@@ -30,7 +30,7 @@ class Model:
     RecOp:SubEx
 
     
-    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],input_leaves_names:list[str],*,c_prop:float=0.3,rand_seed:int=_secret_recipe,unary_prop:float=0.5):
+    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],input_leaves_names:list[str],*,c_prop:float=0.3,rand_seed:int=_secret_recipe,unary_prop:float=0.5,fitness_grouping_perc=None):
         """
         Initializes the model with the given parameters.
         Args:
@@ -53,6 +53,8 @@ class Model:
         self.__population = []
         self.MutOp = MixedMut(rng=self.rng,Fset=self.unaryFset+self.naryFset,input_leaves_names=input_leaves_names,c_prop=c_prop,grow_func=self.__grow)
         self.RecOp = SubEx(rng=self.rng)
+        self.fittest_grp_size = None if fitness_grouping_perc is None else int(fitness_grouping_perc*population_size)
+        self.split_in_fitness_groups = fitness_grouping_perc is not None
 
     def __grow(self,curr_depth=0)->IndividualTree:
         """
@@ -111,7 +113,7 @@ class Model:
     def Fset(self):
         return self.unaryFset+self.naryFset
     
-    def evolve(self,X:np.ndarray,Y:np.ndarray,*,generations:int,elitism_rate:float=0.02,mutation_rate:float=0.1,pool_size:int=2):
+    def evolve(self,X:np.ndarray,Y:np.ndarray,*,generations:int,elitism_rate:float|tuple=0.02,mutation_rate:float|tuple=0.1,pool_size:int=2):
         """
         Evolves the model for a given number of generations.
         Args:
@@ -119,14 +121,23 @@ class Model:
             Y (np.ndarray): The output data.
             generations (int): The number of generations to evolve the model.
         """
+        
+        # check if there are dynamic parameters
+        dynamic_mutation = isinstance(mutation_rate,tuple)
+        dynamic_elitism = isinstance(elitism_rate,tuple)
+
         for g in tqdm(range(generations), position=0, desc="Evolving", leave=True):
             progress = g/generations
-            #LAMBDA_PARSIMONY = 10*(1-progress)
+
+            # adjust mutation and elitism rates
+            mrate = mutation_rate if not dynamic_mutation else mutation_rate[0] + (mutation_rate[1]-mutation_rate[0])*progress
+            eltrate = elitism_rate if not dynamic_elitism else elitism_rate[0] + (elitism_rate[1]-elitism_rate[0])*progress
+
             # sort the population by fitness
             self.__population.sort(key=lambda x: x.fitness(X,Y,self.input_leaves_names,lam=progress),reverse=True)
             
             # determine proportion of elites and offspring
-            SZ_ELITES = int(elitism_rate*self.population_size)
+            SZ_ELITES = int(eltrate*self.population_size)
             SZ_OFFSPRING = self.population_size - SZ_ELITES
             
             # elitism: keep the top individuals
@@ -135,13 +146,20 @@ class Model:
 
             # prepare tournament selection
             def _tournament_selection():
-                pool = self.rng.choice(self.__population,size=pool_size,replace=False)
+                # check if the model must be split in 2 fitness groups
+                if self.split_in_fitness_groups:
+                    fittest_group = self.__population[:self.fittest_grp_size]
+                    rest = self.__population[self.fittest_grp_size:]
+                    draw_grp = fittest_group if self.rng.random() < 0.8 else rest
+                else:
+                    draw_grp = self.__population
+                pool = self.rng.choice(draw_grp,size=pool_size,replace=False)
                 return max(pool,key=lambda x: x.fitness(X,Y,self.input_leaves_names,lam=progress))
             
             # actual generatio of offspring
             offspring = []
             for _ in tqdm(range(SZ_OFFSPRING),desc=f"Generating offspring({g}/{generations})",position=1, leave=False):
-                if self.rng.random() < mutation_rate:
+                if self.rng.random() < mrate:
                     p = _tournament_selection()
                     offspring.append(self.MutOp(p))
                 else:

@@ -187,9 +187,8 @@ class IndividualTree:
         cost = self.mse(inputs,outputs,order)
 
         # implements parsimony pressure using the lambda (lam) parameter as 1/(1+lam)
-        # we want the highest parsimony pressure to double the cost for a tree with depth=5
 
-        depth_normalized = self.depth()/50
+        depth_normalized = self.depth()/100 # max increase of 1 for depth=100
         increase_factor = depth_normalized*(1-lam)
         cost = cost*(1+increase_factor)
         return -cost
