@@ -30,6 +30,20 @@ div = Operator(
     expr="np.divide(#1,#2)"
 )
 
+negation = Operator(
+    "negation",
+    arity=1,
+    func=lambda x: -x,
+    expr="-#1"
+)
+
+inverse = Operator(
+    "inverse",
+    arity=1,
+    func=lambda x: 1 / x,
+    expr="1/#1"
+)
+
 pow = Operator(
     "pow",
     arity=2,
@@ -37,11 +51,54 @@ pow = Operator(
     expr="np.power(#1,#2)"
 )
 
+square = Operator(
+    "square",
+    arity=1,
+    func=lambda x: np.square(x),
+)
+
+exp = Operator(
+    "exp",
+    arity=1,
+    func=lambda x: np.exp(x)
+)
+
+sqrt = Operator(
+    "sqrt",
+    arity=1,
+    func=lambda x: np.sqrt(x)
+)
+
+cbrt = Operator(
+    "cbrt",
+    arity=1,
+    func=lambda x: np.cbrt(x)
+)
+
+log10 = Operator(
+    "log10",
+    arity=1,
+    func=lambda x: np.log10(x)
+)
+
+ln = Operator(
+    "ln",
+    arity=1,
+    func=lambda x: np.log(x),
+    expr="np.log(#1)"
+)
+
 log = Operator(
     "log",
     arity=2,
     func=lambda x, b: np.log(x) / np.log(b),
     expr="np.log(#1)/np.log(#2)"
+)
+
+heavyside = Operator(
+    "heavyside",
+    arity=1,
+    func=lambda x: np.heaviside(x, 0)
 )
 
 sin = Operator(

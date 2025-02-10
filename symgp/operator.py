@@ -25,7 +25,8 @@ class Operator:
                 self.expr += f"#{i+1}" + ("" if i==self.arity-1 else ",")
             self.expr += ")"
     def __call__(self, *args):
-        assert len(args) == self.arity, f"Operator '{self.name}' expects {self.arity} arguments, got {len(args)}"
+        if len(args) != self.arity:
+            raise ValueError(f"Operator '{self.name}' expects {self.arity} arguments, got {len(args)}")
         with np.errstate(invalid='ignore', divide='ignore', over='ignore'):
             return self.function(*args)
         
