@@ -182,9 +182,17 @@ class IndividualTree:
         with np.errstate(invalid='ignore', divide='ignore', over='ignore'):
             return np.mean((diff)**2)
     
-    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str],*,lam:float=10):
-        # implements parsimony pressure
-        return -self.mse(inputs,outputs,order)+(self.depth())*lam
+    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str],*,lam:float=1):
+        # first compute basic cost as mse
+        cost = self.mse(inputs,outputs,order)
+
+        # implements parsimony pressure using the lambda (lam) parameter as 1/(1+lam)
+        # we want the highest parsimony pressure to double the cost for a tree with depth=5
+
+        depth_normalized = self.depth()/50
+        increase_factor = depth_normalized*(1-lam)
+        cost = cost*(1+increase_factor)
+        return -cost
     
     def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
         sn = self.root.subnodes(keep_leaves)
