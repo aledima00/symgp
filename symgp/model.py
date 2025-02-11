@@ -35,7 +35,7 @@ class Model:
         self.input_leaves_names = input_leaves_names
         self.rng = np.random.Generator(np.random.PCG64([rand_seed]))
         self.__population = []
-        self.MutOp = MixedMut(rng=self.rng,Fset=self.unaryFset+self.naryFset,input_leaves_names=input_leaves_names,grow_func=self.__grow,lgen_func=self.__leaf_gen)
+        self.MutOp = MixedMut(rng=self.rng,Fset=self.unaryFset+self.naryFset,input_leaves_names=input_leaves_names,grow_func=self.__grow,lgen_func=self.__leaf_gen,probabs=[30,15,7.5,7.5,30])
         self.RecOp = SubEx(rng=self.rng)
         self.fittest_grp_size = None if fitness_grouping_perc is None else int(fitness_grouping_perc*population_size)
         self.split_in_fitness_groups = fitness_grouping_perc is not None
