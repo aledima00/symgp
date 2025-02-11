@@ -1,7 +1,7 @@
 from . import Operator as _op
-from .individual import Leaf, VarLeaf, IndividualTree, Node
+from .individual import Leaf, VarLeaf, IndividualTree, Node, SpecialLeaf
 import numpy as np
-from typing import List as _LST, Literal as _LIT
+from typing import List as _LST, Literal as _LIT, Dict as _DCT
 from . import npf
 from .genetic import MixedMut,SubEx
 from tqdm.auto import tqdm
@@ -18,26 +18,21 @@ class Model:
 
     # Tset is the set of terminal nodes, which are the input leaves and constants
     input_leaves_names:_LST[str] # actual inputs
-    c_prop:float # proportion of constants to input leaves in the terminal set
-    unary_prop:float # proportion of drawing unary functions to drawing n-ary functions when growing a tree
 
     rng:np.random.Generator
-
-    __population:_LST[IndividualTree]
 
     # genetic operators
     MutOp:MixedMut
     RecOp:SubEx
 
     
-    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],input_leaves_names:list[str],*,c_prop:float=0.3,rand_seed:int=_secret_recipe,unary_prop:float=0.5,fitness_grouping_perc=None):
+    def __init__(self,max_depth:int,population_size:int,Fset:list[_op],input_leaves_names:list[str],*,rand_seed:int=_secret_recipe,fitness_grouping_perc=None,generation_params:_DCT|None=None):
         """
         Initializes the model with the given parameters.
         Args:
             max_depth (int): The maximum depth of the model.
             Fset (list[_op]): A list of function set operations.
             input_leaves_names (list[str]): A list of name of input leaves (variables).
-            c_prop (float, optional): The proportion of constants to input leaves. Defaults to 0.4.
             rand_seed (int, optional): The random seed. Defaults to 12345.
             unary_prop (float, optional): The proportion of drawing unary functions to drawing n-ary functions when growing a tree. Defaults to 0.5.
         """
@@ -47,14 +42,39 @@ class Model:
         self.unaryFset = [op for op in Fset if npf.is_unary(op)]
         self.naryFset = [op for op in Fset if npf.is_nary(op)]
         self.input_leaves_names = input_leaves_names
-        self.c_prop = c_prop
-        self.unary_prop = unary_prop        
         self.rng = np.random.Generator(np.random.PCG64([rand_seed]))
         self.__population = []
-        self.MutOp = MixedMut(rng=self.rng,Fset=self.unaryFset+self.naryFset,input_leaves_names=input_leaves_names,c_prop=c_prop,grow_func=self.__grow)
+        self.MutOp = MixedMut(rng=self.rng,Fset=self.unaryFset+self.naryFset,input_leaves_names=input_leaves_names,grow_func=self.__grow,lgen_func=self.__leaf_gen)
         self.RecOp = SubEx(rng=self.rng)
         self.fittest_grp_size = None if fitness_grouping_perc is None else int(fitness_grouping_perc*population_size)
         self.split_in_fitness_groups = fitness_grouping_perc is not None
+
+        
+        if generation_params is None:
+            # default generation parameters
+            self._int_constants = True
+            self._randc_mean = 0
+            self._randc_std = 5
+            self._ctv_prop = 0.3
+            self._stv_prop = 0.1
+            self._unary_to_others_prop = 0.5
+        else:
+            allowed_generation_params ={
+                "int_constants":bool,
+                "randc_mean":float|int,
+                "randc_std":float|int,
+                "ctv_prop":float|int,
+                "stv_prop":float|int,
+                "unary_to_others_prop":float|int
+            }
+            for k,v in generation_params.items():
+                if k in allowed_generation_params:
+                    if isinstance(v,allowed_generation_params[k]):
+                        setattr(self,f"_{k}",v)
+                    else:
+                        raise ValueError(f"Invalid type for constant generation parameter: {k} should be {allowed_generation_params[k]} but is {type(v)}")
+                else:
+                    raise ValueError(f"Invalid constant generation parameter: {k}")
 
     def __grow(self,curr_depth=0)->IndividualTree:
         """
@@ -63,12 +83,9 @@ class Model:
             IndividualTree: A new individual tree.
         """
         if curr_depth == self.max_depth:
-            # reached the maximum depth: choose a constant or a leaf
-            if self.rng.random() < self.c_prop:
-                return Leaf(self.rng.random())
-            else:
-                return VarLeaf(self.rng.choice(self.input_leaves_names))
-        if self.rng.random() < self.unary_prop:
+            # reached the maximum depth: generate a leaf
+            return self.__leaf_gen()
+        if self.rng.random() < self._unary_to_others_prop:
             op = self.rng.choice(self.unaryFset)
         else:
             op = self.rng.choice(self.naryFset)
@@ -80,6 +97,20 @@ class Model:
             return IndividualTree(curr_node, simplify=True)
         else:
             return curr_node
+        
+    def __leaf_gen(self)->Leaf|SpecialLeaf|VarLeaf:
+        if self.rng.random() < self._ctv_prop:
+            if self.rng.random() < self._stv_prop:
+                strval = self.rng.choice(["pi","e"])
+                return SpecialLeaf(strval)
+            else:
+                cval = self.rng.normal(self._randc_mean,self._randc_std)
+                if self._int_constants:
+                    cval = np.round(cval)
+                return Leaf(cval)
+        else:
+            return VarLeaf(self.rng.choice(self.input_leaves_names))
+
         
     def populate(self):
         """
@@ -182,7 +213,7 @@ class Model:
         return iter(self.__population)
 
 class BaseModel(Model):
-    def __init__(self,max_depth:int,population_size:int,input_leaves_names:list[str],*,c_prop:float=0.3,rand_seed:int=_secret_recipe):
-        super().__init__(max_depth=max_depth,population_size=population_size,Fset=npf.get_all(),input_leaves_names=input_leaves_names,c_prop=c_prop,rand_seed=rand_seed)
+    def __init__(self,max_depth:int,population_size:int,input_leaves_names:list[str],*,rand_seed:int=_secret_recipe,fitness_grouping_perc=None,generation_params:_DCT|None=None):
+        super().__init__(max_depth=max_depth,population_size=population_size,Fset=npf.get_all(),input_leaves_names=input_leaves_names,rand_seed=rand_seed,fitness_grouping_perc=fitness_grouping_perc,generation_params=generation_params)
 
 __all__ = ["Model","BaseModel"]

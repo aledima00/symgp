@@ -64,32 +64,16 @@ class HoistMut:
         ret.update()
         return ret
     
-class ConstMut:
-    def __init__(self,*,rng:np.random.Generator):
-        self.name="Constant Mutation Operator"
-        self.rng = rng
-    def __call__(self,it:IndividualTree):
-        ret = it.deepCopy()
-        leaves = ret.subnodes(keep_leaves=True,keep_root=True)
-        leaves = [l for l in leaves if (isinstance(l,Leaf) and not isinstance(l,VarLeaf))]
-        if len(leaves) != 0:
-            p = self.rng.choice(leaves)
-            p.value = self.rng.random()
-        ret.update()
-        return ret
     
 class CollapseMut:
-    def __init__(self,*,rng:np.random.Generator,input_leaves_names:_LST[str],c_prop:float=0.3):
+    def __init__(self,*,rng:np.random.Generator,input_leaves_names:_LST[str],lgen_func:_CLB):
         self.name="Collapse Mutation Operator"
         self.rng = rng
         self.input_leaves_names = input_leaves_names
-        self.c_prop = c_prop
+        self.lgen_func = lgen_func
     def __call__(self,it:IndividualTree):
         ret = it.deepCopy()
-        if self.rng.random() < self.c_prop:
-            lf = Leaf(self.rng.random())
-        else:
-            lf = VarLeaf(self.rng.choice(self.input_leaves_names))
+        lf = self.lgen_func()
         nodes = ret.subnodes(keep_leaves=False,keep_root=True)
         if len(nodes) != 0:
             p = self.rng.choice(nodes)
@@ -100,15 +84,14 @@ class CollapseMut:
         return ret
 
 class MixedMut:
-    def __init__(self,*,rng:np.random.Generator,Fset:_LST[Node],input_leaves_names:_LST[str],c_prop:float=0.3,grow_func:_CLB):
+    def __init__(self,*,rng:np.random.Generator,Fset:_LST[Node],input_leaves_names:_LST[str],grow_func:_CLB,lgen_func:_CLB):
         self.name="Mixed Mutation Operator"
         self.rng = rng
         self.Fset = Fset
         self.mutops =[
             PointMut(rng=rng,Fset=Fset),
             PermMut(rng=rng),HoistMut(rng=rng),
-            ConstMut(rng=rng),
-            CollapseMut(rng=rng,input_leaves_names=input_leaves_names,c_prop=c_prop),
+            CollapseMut(rng=rng,input_leaves_names=input_leaves_names,lgen_func=lgen_func),
             SubTreeMut(rng=rng,grow_func=grow_func)
         ]
     def __call__(self,it:IndividualTree):
