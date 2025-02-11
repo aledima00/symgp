@@ -113,7 +113,7 @@ class Model:
     def Fset(self):
         return self.unaryFset+self.naryFset
     
-    def evolve(self,X:np.ndarray,Y:np.ndarray,*,generations:int,elitism_rate:float|tuple=0.02,mutation_rate:float|tuple=0.1,pool_size:int=2):
+    def evolve(self,X:np.ndarray,Y:np.ndarray,*,generations:int,elitism_rate:float|tuple=0.02,mutation_rate:float|tuple=0.1,pool_size:int=2,parsimony_weight:float=0.1):
         """
         Evolves the model for a given number of generations.
         Args:
@@ -134,7 +134,7 @@ class Model:
             eltrate = elitism_rate if not dynamic_elitism else elitism_rate[0] + (elitism_rate[1]-elitism_rate[0])*progress
 
             # sort the population by fitness
-            self.__population.sort(key=lambda x: x.fitness(X,Y,self.input_leaves_names,lam=progress),reverse=True)
+            self.__population.sort(key=lambda x: x.fitness(X,Y,self.input_leaves_names,parsimony_weight=parsimony_weight),reverse=True)
             
             # determine proportion of elites and offspring
             SZ_ELITES = int(eltrate*self.population_size)
@@ -154,7 +154,7 @@ class Model:
                 else:
                     draw_grp = self.__population
                 pool = self.rng.choice(draw_grp,size=pool_size,replace=False)
-                return max(pool,key=lambda x: x.fitness(X,Y,self.input_leaves_names,lam=progress))
+                return max(pool,key=lambda x: x.fitness(X,Y,self.input_leaves_names,parsimony_weight=parsimony_weight))
             
             # actual generatio of offspring
             offspring = []

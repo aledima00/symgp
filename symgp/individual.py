@@ -182,15 +182,8 @@ class IndividualTree:
         with np.errstate(invalid='ignore', divide='ignore', over='ignore'):
             return np.mean((diff)**2)
     
-    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str],*,lam:float=1):
-        # first compute basic cost as mse
-        cost = self.mse(inputs,outputs,order)
-
-        # implements parsimony pressure using the lambda (lam) parameter as 1/(1+lam)
-
-        depth_normalized = self.depth()/100 # max increase of 1 for depth=100
-        increase_factor = depth_normalized*(1-lam)
-        cost = cost*(1+increase_factor)
+    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str],*,parsimony_weight:float=0.1):
+        cost = self.mse(inputs,outputs,order) + self.depth()*parsimony_weight
         return -cost
     
     def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
