@@ -11,11 +11,13 @@ class SubEx:
         ret2 = it2.deepCopy()
         nodes1 = ret1.subnodes(keep_leaves=False,keep_root=True)
         nodes2 = ret2.subnodes(keep_leaves=False,keep_root=True)
-        p1 = self.rng.choice(nodes1)
-        p2 = self.rng.choice(nodes2)
-        idx1 = self.rng.integers(0,len(p1.children))
-        idx2 = self.rng.integers(0,len(p2.children))
-        p1.children[idx1],p2.children[idx2] = p2.children[idx2],p1.children[idx1]
+        if len(nodes1) != 0 and len(nodes2) != 0:
+            p1 = self.rng.choice(nodes1)
+            p2 = self.rng.choice(nodes2)
+            if len(p1.children) !=0 and len(p2.children) != 0:
+                idx1 = self.rng.integers(0,len(p1.children))
+                idx2 = self.rng.integers(0,len(p2.children))
+                p1.children[idx1],p2.children[idx2] = p2.children[idx2],p1.children[idx1]
         ret1.update()
         ret2.update()
         return ret1,ret2

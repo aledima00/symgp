@@ -43,11 +43,12 @@ class PermMut:
     def __call__(self,it:IndividualTree):
         ret = it.deepCopy()
         nodes = ret.subnodes(keep_leaves=False,keep_root=True)
-        nary_nodes = [n for n in nodes if n.operator.arity > 1]
-        if len(nary_nodes) != 0:
-            p = self.rng.choice(nary_nodes)
-            p.children = self.rng.permutation(p.children)
-        ret.update()
+        if len(nodes) != 0:
+            nary_nodes = [n for n in nodes if n.operator.arity > 1]
+            if len(nary_nodes) != 0:
+                p = self.rng.choice(nary_nodes)
+                p.children = self.rng.permutation(p.children)
+            ret.update()
         return ret
 
 class HoistMut:
@@ -56,7 +57,7 @@ class HoistMut:
         self.rng = rng
     def __call__(self,it:IndividualTree):
         ret = it.deepCopy()
-        nodes = ret.subnodes(keep_leaves=False,keep_root=False)
+        nodes = ret.subnodes(keep_leaves=True,keep_root=False)
         if len(nodes) != 0:
             p = self.rng.choice(nodes)
             ret.root = p

@@ -165,6 +165,8 @@ class IndividualTree:
 
     def __update_input_leaves(self):
         self.inputLeaves = dict()
+        if isinstance(self.root,VarLeaf):
+            self.inputLeaves[self.root.name] = [self.root]
         sn = self.root.subnodes(keep_leaves=True)
         for n in sn:
             if isinstance(n,VarLeaf):
@@ -217,7 +219,8 @@ class IndividualTree:
     def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
         sn = self.root.subnodes(keep_leaves)
         if keep_root:
-            sn = [self.root] + sn
+            if keep_leaves or not isinstance(self.root,Leaf):
+                sn = [self.root] + sn
         return sn
     
     def getExpr(self,names:_DCT[str,str]|None=None):
