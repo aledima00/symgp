@@ -27,15 +27,6 @@ class Model:
 
     
     def __init__(self,max_depth:int,population_size:int,Fset:list[_op],input_leaves_names:list[str],*,rand_seed:int=_secret_recipe,fitness_grouping_perc=None,generation_params:_DCT|None=None):
-        """
-        Initializes the model with the given parameters.
-        Args:
-            max_depth (int): The maximum depth of the model.
-            Fset (list[_op]): A list of function set operations.
-            input_leaves_names (list[str]): A list of name of input leaves (variables).
-            rand_seed (int, optional): The random seed. Defaults to 12345.
-            unary_prop (float, optional): The proportion of drawing unary functions to drawing n-ary functions when growing a tree. Defaults to 0.5.
-        """
         
         self.max_depth = max_depth
         self.population_size = population_size
@@ -145,13 +136,6 @@ class Model:
         return self.unaryFset+self.naryFset
     
     def evolve(self,X:np.ndarray,Y:np.ndarray,*,generations:int,elitism_rate:float|tuple=0.02,mutation_rate:float|tuple=0.1,pool_size:int=2,parsimony_weight:float|tuple=0,parsimony_format:_LIT["linear","bilinear"]="linear"):
-        """
-        Evolves the model for a given number of generations.
-        Args:
-            X (np.ndarray): The input data.
-            Y (np.ndarray): The output data.
-            generations (int): The number of generations to evolve the model.
-        """
         
         # check if there are dynamic parameters
         dynamic_mutation = isinstance(mutation_rate,tuple)

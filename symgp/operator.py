@@ -6,10 +6,6 @@ import numpy as np
 from typing import Tuple as _TUP, List as _LST
 
 class Operator:
-    """
-    A class to represent an operator in the symbolic regression model.\n
-    Basically a wrapper around a function with some metadata to handle compatibility checks and other stuff.
-    """
     function:_Callable
     name:str
     arity:int
