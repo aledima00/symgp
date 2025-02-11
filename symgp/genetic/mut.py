@@ -17,7 +17,7 @@ class SubTreeMut:
             # replace random child of p with new_tree
             idx = self.rng.integers(0,len(p.children))
             p.children[idx] = new_tree.root
-        ret.update_input_leaves()
+        ret.update()
         return ret
 
 class PointMut:
@@ -32,7 +32,7 @@ class PointMut:
             p = self.rng.choice(nodes)
             ops = [op for op in self.Fset if op.arity == p.operator.arity]
             p.operator = self.rng.choice(ops)
-        ret.update_input_leaves()
+        ret.update()
         return ret
 
 class PermMut:
@@ -47,7 +47,7 @@ class PermMut:
         if len(nary_nodes) != 0:
             p = self.rng.choice(nary_nodes)
             p.children = self.rng.permutation(p.children)
-        ret.update_input_leaves()
+        ret.update()
         return ret
 
 class HoistMut:
@@ -60,7 +60,7 @@ class HoistMut:
         if len(nodes) != 0:
             p = self.rng.choice(nodes)
             ret.root = p
-        ret.update_input_leaves()
+        ret.update()
         return ret
     
 class ConstMut:
@@ -74,7 +74,7 @@ class ConstMut:
         if len(leaves) != 0:
             p = self.rng.choice(leaves)
             p.value = self.rng.random()
-        ret.update_input_leaves()
+        ret.update()
         return ret
     
 class CollapseMut:
@@ -95,7 +95,7 @@ class CollapseMut:
             # replace random child of p with lf
             idx = self.rng.integers(0,len(p.children))
             p.children[idx] = lf
-        ret.update_input_leaves()
+        ret.update()
         return ret
 
 class MixedMut:

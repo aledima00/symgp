@@ -12,6 +12,20 @@ class Node:
     def __init__(self, operator:Operator, children:List['Node']):
         self.children = children
         self.operator = operator
+    def simplify(self)->"Node":
+        if not isinstance(self,Leaf):
+            for i,child in enumerate(self.children):
+                if isinstance(child,Node) and not isinstance(child,Leaf):
+                    self.children[i] = child.simplify()
+            simplified = self.operator.simplified(self.children)
+            if simplified is not None:
+                op, chs = simplified
+                if isinstance(op,Operator):
+                    self.operator = op
+                    self.children = chs
+                else:
+                    return Leaf(op)
+        return self
     def evaluate(self):
         return self.operator(*[child.evaluate() for child in self.children])
     def fstr(self,fstr:Formatted=None)->Formatted:
@@ -136,13 +150,20 @@ class IndividualTree:
     inputLeaves:_DCT[str,_LS[VarLeaf]]
     root:Node
     
-    def __init__(self, root:Node):
+    def __init__(self, root:Node,*,simplify=False):
         self.root = root
         self.numInputs=0
         self.inputLeaves = dict()
-        self.update_input_leaves()
+        if simplify:
+            self.root = self.root.simplify()
+        self.__update_input_leaves()
+        
 
-    def update_input_leaves(self):
+    def update(self):
+        self.root = self.root.simplify()
+        self.__update_input_leaves()
+
+    def __update_input_leaves(self):
         self.inputLeaves = dict()
         sn = self.root.subnodes(keep_leaves=True)
         for n in sn:

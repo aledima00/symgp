@@ -6,28 +6,32 @@ from .. import Operator
 add = Operator(
     "add",
     arity=2,
-    func=lambda a, b: np.add(a, b)
+    func=lambda a, b: np.add(a, b),
+    simplify_func=lambda a, b: (mul,[a,2]) if a == b else None
 )
 
 sub = Operator(
     "sub",
     arity=2,
     func=lambda a, b: np.subtract(a, b),
-    expr="np.subtract(#1,#2)"
+    expr="np.subtract(#1,#2)",
+    simplify_func=lambda a, b: (0,[]) if a == b else None
 )
 
 mul = Operator(
     "mul",
     arity=2,
     func=lambda a, b: np.multiply(a, b),
-    expr="np.multiply(#1,#2)"
+    expr="np.multiply(#1,#2)",
+    simplify_func=lambda a, b: (pow,[a,2]) if a == b else None
 )
 
 div = Operator(
     "div",
     arity=2,
     func=lambda a, b: np.divide(a, b),
-    expr="np.divide(#1,#2)"
+    expr="np.divide(#1,#2)",
+    simplify_func=lambda a, b: (1,[]) if a == b else None
 )
 
 negation = Operator(
@@ -92,7 +96,8 @@ log = Operator(
     "log",
     arity=2,
     func=lambda x, b: np.log(x) / np.log(b),
-    expr="np.log(#1)/np.log(#2)"
+    expr="np.log(#1)/np.log(#2)",
+    simplify_func=lambda a,b: (1,[]) if a == b else None
 )
 
 heavyside = Operator(
@@ -206,11 +211,13 @@ round = Operator(
 maximum = Operator(
     "maximum",
     arity=2,
-    func=lambda a, b: np.maximum(a, b)
+    func=lambda a, b: np.maximum(a, b),
+    simplify_func=lambda a, b: (a,[]) if a == b else None
 )
 
 minimum = Operator(
     "minimum",
     arity=2,
-    func=lambda a, b: np.minimum(a, b)
+    func=lambda a, b: np.minimum(a, b),
+    simplify_func=lambda a, b: (a,[]) if a == b else None
 )

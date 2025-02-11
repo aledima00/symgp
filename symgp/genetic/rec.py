@@ -16,8 +16,8 @@ class SubEx:
         idx1 = self.rng.integers(0,len(p1.children))
         idx2 = self.rng.integers(0,len(p2.children))
         p1.children[idx1],p2.children[idx2] = p2.children[idx2],p1.children[idx1]
-        ret1.update_input_leaves()
-        ret2.update_input_leaves()
+        ret1.update()
+        ret2.update()
         return ret1,ret2
 
 __all__ = ["SubEx"]

@@ -3,6 +3,7 @@ from consoleformat import Formatted
 from colorama import Fore 
 import inspect
 import numpy as np
+from typing import Tuple as _TUP, List as _LST
 
 class Operator:
     """
@@ -13,7 +14,7 @@ class Operator:
     name:str
     arity:int
 
-    def __init__(self, name:str, arity:int, func:_Callable,expr:str=None):
+    def __init__(self, name:str, arity:int, func:_Callable,expr:str=None,*,simplify_func:_Callable[[_LST],_TUP['Operator',_LST]]|None=None):
         self.name = name
         self.function = func
         self.arity = arity
@@ -24,6 +25,14 @@ class Operator:
             for i in range(self.arity):
                 self.expr += f"#{i+1}" + ("" if i==self.arity-1 else ",")
             self.expr += ")"
+
+        self.simplifiable = simplify_func is not None
+        self.simplify_func = simplify_func
+
+    # define the simplified function that acts on tuples like (operator,[args])
+    def simplified(self,in_lst:_LST)->_TUP['Operator',_LST]:
+        return self.simplify_func(*in_lst) if self.simplifiable else None
+
     def __call__(self, *args):
         if len(args) != self.arity:
             raise ValueError(f"Operator '{self.name}' expects {self.arity} arguments, got {len(args)}")

@@ -77,7 +77,7 @@ class Model:
             children.append(self.__grow(curr_depth+1))
         curr_node = Node(operator=op,children=children)
         if curr_depth == 0:
-            return IndividualTree(curr_node)
+            return IndividualTree(curr_node, simplify=True)
         else:
             return curr_node
         
