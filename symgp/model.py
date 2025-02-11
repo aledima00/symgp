@@ -1,7 +1,7 @@
 from . import Operator as _op
 from .individual import Leaf, VarLeaf, IndividualTree, Node
 import numpy as np
-from typing import List as _LST
+from typing import List as _LST, Literal as _LIT
 from . import npf
 from .genetic import MixedMut,SubEx
 from tqdm.auto import tqdm
@@ -113,7 +113,7 @@ class Model:
     def Fset(self):
         return self.unaryFset+self.naryFset
     
-    def evolve(self,X:np.ndarray,Y:np.ndarray,*,generations:int,elitism_rate:float|tuple=0.02,mutation_rate:float|tuple=0.1,pool_size:int=2,parsimony_weight:float=0.1):
+    def evolve(self,X:np.ndarray,Y:np.ndarray,*,generations:int,elitism_rate:float|tuple=0.02,mutation_rate:float|tuple=0.1,pool_size:int=2,parsimony_weight:float|tuple=0,parsimony_format:_LIT["linear","bilinear"]="linear"):
         """
         Evolves the model for a given number of generations.
         Args:
@@ -125,6 +125,7 @@ class Model:
         # check if there are dynamic parameters
         dynamic_mutation = isinstance(mutation_rate,tuple)
         dynamic_elitism = isinstance(elitism_rate,tuple)
+        dynamic_parsimony = isinstance(parsimony_weight,tuple)
 
         for g in tqdm(range(generations), position=0, desc="Evolving", leave=True):
             progress = g/generations
@@ -132,9 +133,10 @@ class Model:
             # adjust mutation and elitism rates
             mrate = mutation_rate if not dynamic_mutation else mutation_rate[0] + (mutation_rate[1]-mutation_rate[0])*progress
             eltrate = elitism_rate if not dynamic_elitism else elitism_rate[0] + (elitism_rate[1]-elitism_rate[0])*progress
+            parsweight = parsimony_weight if not dynamic_parsimony else parsimony_weight[0] + (parsimony_weight[1]-parsimony_weight[0])*progress
 
             # sort the population by fitness
-            self.__population.sort(key=lambda x: x.fitness(X,Y,self.input_leaves_names,parsimony_weight=parsimony_weight),reverse=True)
+            self.__population.sort(key=lambda x: x.fitness(X,Y,self.input_leaves_names,parsimony_weight=parsweight,parsimony_format=parsimony_format),reverse=True)
             
             # determine proportion of elites and offspring
             SZ_ELITES = int(eltrate*self.population_size)
@@ -154,7 +156,7 @@ class Model:
                 else:
                     draw_grp = self.__population
                 pool = self.rng.choice(draw_grp,size=pool_size,replace=False)
-                return max(pool,key=lambda x: x.fitness(X,Y,self.input_leaves_names,parsimony_weight=parsimony_weight))
+                return max(pool,key=lambda x: x.fitness(X,Y,self.input_leaves_names,parsimony_weight=parsweight,parsimony_format=parsimony_format))
             
             # actual generatio of offspring
             offspring = []

@@ -2,7 +2,7 @@ from . import Operator
 from typing import List
 from consoleformat import Formatted
 from colorama import Fore
-from typing import Dict as _DCT, List as _LS
+from typing import Dict as _DCT, List as _LS, Literal as _LIT
 import numpy as np
 
 class Node:
@@ -182,8 +182,15 @@ class IndividualTree:
         with np.errstate(invalid='ignore', divide='ignore', over='ignore'):
             return np.mean((diff)**2)
     
-    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str],*,parsimony_weight:float=0.1):
-        cost = self.mse(inputs,outputs,order) + self.depth()*parsimony_weight
+    def fitness(self,inputs:np.ndarray,outputs:np.ndarray,order:_LS[str],*,parsimony_weight:float=0,parsimony_format:_LIT["linear","bilinear"]="linear"):
+
+        if parsimony_format == "linear":
+            cost = self.mse(inputs,outputs,order) + self.depth()*parsimony_weight
+        elif parsimony_format == "bilinear":
+            cost = self.mse(inputs,outputs,order)*self.depth()*parsimony_weight
+        else:
+            raise ValueError(f"Invalid parsimony format '{parsimony_format}'")
+        
         return -cost
     
     def subnodes(self,keep_leaves:bool=True,keep_root:bool=False):
