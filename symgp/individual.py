@@ -114,6 +114,20 @@ class Leaf(Node):
     def __str__(self):
         return str(self.fstr())
     
+class SpecialLeaf(Leaf):
+    def __init__(self, name:_LIT["pi","e"]):
+        if name not in ["pi","e"]:
+            raise ValueError(f"Invalid special leaf name '{name}'")
+        self.name = name
+        self.value = np.pi if name == "pi" else np.e
+        super().__init__(self.value)
+    def fstr(self,fstr:Formatted=None)->Formatted:
+        if fstr is None:
+            fstr = Formatted()
+        fstr.append(f"{self.name}",fore=Fore.RED)
+        return fstr
+
+    
 class VarLeaf(Leaf):
     def __init__(self, name:str):
         self.name = name
@@ -230,4 +244,4 @@ class IndividualTree:
     def deepCopy(self):
         return IndividualTree(self.root.deepCopy())
     
-__all__ = ["Node", "Leaf", "IndividualTree","VarLeaf"]
+__all__ = ["Node", "Leaf", "IndividualTree","VarLeaf","SpecialLeaf"]

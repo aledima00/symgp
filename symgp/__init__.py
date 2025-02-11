@@ -1,6 +1,6 @@
 from .operator import Operator
 from . import npf
-from .individual import IndividualTree, Leaf, Node, VarLeaf
+from .individual import IndividualTree, Leaf, Node, VarLeaf,SpecialLeaf
 from .model import Model, BaseModel
 from . import genetic
 
