@@ -35,6 +35,44 @@ poetry install
 
 ## Usage
 
+You can use APIs in different abstraction levels, as each class has its own purpose and it is documented in this repo.
+For example, have a look at this tree generation and relative print:
+
+```python
+import symgp
+from symgp import IndividualTree, Node,Leaf,VarLeaf,SpecialLeaf
+from symgp import npf
+
+# we want to represent: ((x+y)^2)/2*pi*z
+
+# create the var leaves
+x = VarLeaf("x")
+y = VarLeaf("y")
+z = VarLeaf("z")
+
+# create the nodes
+n1 = Node(npf.add, [x,y])
+n2 = Node(npf.pow, [n1,Leaf(2)])
+d1 = Node(npf.mul, [Leaf(2),SpecialLeaf("pi")])
+d2 = Node(npf.mul, [d1,z])
+rt = Node(npf.div, [n2,d2])
+
+# create the individual tree
+ind = IndividualTree(rt)
+
+# print the expression
+print(ind.fstr())
+
+# print the tree
+print(ind.tree_fstr())
+```
+
+the associated output is the following
+![output-img](imgs/plot.png)
+showing both *LISP* and tree representations.
+
+> notice that in all the repo, the `fstr()` and `tree_fstr()` format are used as in this case, and they exploit the `Formatted` class from my `consoleformat` library (https://github.com/aledima00/ConsoleFormat). 
+
 ### Basic Example
 
 Here is a basic example of how to use `symgp` to perform symbolic regression:
@@ -96,35 +134,25 @@ print("Fitness:", best_individual.fitness(X, Y, LEAVES_NAMES))
 
 #### **Operator**
 
-The `Operator` class represents a mathematical operator used in the symbolic expressions.
-
-- **Attributes:**
-  - `name`: The name of the operator.
-  - `arity`: The number of arguments the operator takes.
-  - `function`: The function implementing the operator.
-  - `expr`: The string representation of the operator.
-  - `simplify_func`: A function to simplify expressions involving this operator.
+The `Operator` class represents a mathematical operator used in the symbolic expressions. It is basically a wrapper around an actual function that includes some metadata and some addded functionalities.
 
 - **Methods:**
   - `__init__(self, name: str, arity: int, func: Callable, expr: str = None, *, simplify_func: Callable[[List], Tuple['Operator', List]] = None)`: Initializes the operator.
-    - `name`: The name of the operator.
+    - `name`: The name of the operator, short for tree and LISP representation.
     - `arity`: The number of arguments the operator takes.
-    - `func`: The function implementing the operator.
-    - `expr`: The string representation of the operator.
-    - `simplify_func`: A function to simplify expressions involving this operator.
+    - `func`: The function implemented and wrapped by the operator.
+    - `expr`: The string representation of the operator as to be written in an actual python function; it uses `#N` placeholders to indicate args, like `np.add(#1,#2)`; when not provided, it uses the syntax `np.name(...)`, using the `self.name` parameter and the `self.arity` to write placeholders;
+    - `simplify_func`: A function to simplify expressions involving this operator. When called on some params, it returns a tuple with a simplified operator or constant leaf, and eventually children as list of subset of items from input args; it returns `None` when no simplification can be done; for example, to simplify a sum we can apply the function `lambda a,b: mul(2,a) if a==b else None`
   - `__call__(self, *args)`: Applies the operator to the given arguments.
-    - `args`: The arguments to apply the operator to.
-  - `simplified(self, in_lst: List) -> Tuple['Operator', List]`: Simplifies the operator with the given arguments.
-    - `in_lst`: The list of arguments to simplify.
-  - `solved_expr(self, args: list) -> str`: Returns the string representation of the operator with the given arguments.
-    - `args`: The arguments to include in the string representation.
+  - `simplified(self, in_lst: List) -> Tuple['Operator', List]`: Simplifies the operator with the given arguments, calling the function provided in initialization to the constructor;
+  - `solved_expr(self, args: list) -> str`: Returns the string representation of the operator with the given arguments, replacing the placeholders are substituted with actual data privded by `args`
   - `fstr(self, fstr: Formatted = None) -> Formatted`: Returns a formatted string representation of the operator.
-    - `fstr`: The formatted string to append to.
   - `getInfo(self) -> str`: Returns detailed information about the operator.
 
 #### **Node**
 
 The `Node` class represents a node in the symbolic expression tree.
+It is a mid-level API, providing a further wrap around operator to use it as a node in a tree representation.
 
 - **Attributes:**
   - `operator`: The operator used in the node.
@@ -137,13 +165,8 @@ The `Node` class represents a node in the symbolic expression tree.
   - `simplify(self) -> "Node"`: Simplifies the node.
   - `evaluate(self)`: Evaluates the node.
   - `fstr(self, fstr: Formatted = None) -> Formatted`: Returns a formatted string representation of the node.
-    - `fstr`: The formatted string to append to.
   - `tree_fstr(self, depth: int = 0, ended_levels: dict = dict(), fstr: Formatted = None) -> Formatted`: Returns a tree-formatted string representation of the node.
-    - `depth`: The current depth of the tree.
-    - `ended_levels`: The levels that have ended.
-    - `fstr`: The formatted string to append to.
-  - `subnodes(self, keep_leaves: bool = True) -> List['Node']`: Returns the subnodes of the node.
-    - `keep_leaves`: Whether to keep the leaves in the subnodes.
+  - `subnodes(self, keep_leaves: bool = True) -> List['Node']`: Returns the subnodes of the node, intended as all the nodes that are not the node itself, and eventually the leaves;
   - `expr(self, names: Dict[str, str] = None) -> str`: Returns the string representation of the node.
     - `names`: The names to use in the string representation.
   - `depth(self) -> int`: Returns the depth of the node.
@@ -151,7 +174,7 @@ The `Node` class represents a node in the symbolic expression tree.
 
 #### **Leaf**
 
-The `Leaf` class represents a leaf node in the symbolic expression tree.
+The `Leaf` class represents a leaf node in the symbolic expression tree. It is a class derived from `Node`, reshaped to handle values and no children, being a terminal node.
 
 - **Attributes:**
   - `value`: The value of the leaf.
@@ -159,21 +182,11 @@ The `Leaf` class represents a leaf node in the symbolic expression tree.
 - **Methods:**
   - `__init__(self, value)`: Initializes the leaf.
     - `value`: The value of the leaf.
-  - `evaluate(self)`: Evaluates the leaf.
-  - `fstr(self, fstr: Formatted = None) -> Formatted`: Returns a formatted string representation of the leaf.
-    - `fstr`: The formatted string to append to.
-  - `tree_fstr(self, depth: int = 0, ended_levels: dict = dict(), fstr: Formatted = None) -> Formatted`: Returns a tree-formatted string representation of the leaf.
-    - `depth`: The current depth of the tree.
-    - `ended_levels`: The levels that have ended.
-    - `fstr`: The formatted string to append to.
-  - `depth(self) -> int`: Returns the depth of the leaf.
-  - `expr(self, names: Dict[str, str] = None) -> str`: Returns the string representation of the leaf.
-    - `names`: The names to use in the string representation.
-  - `deepCopy(self) -> "Leaf"`: Returns a deep copy of the leaf.
+  - some other methods are overridden...
 
 #### **VarLeaf**
 
-The `VarLeaf` class represents a variable leaf node in the symbolic expression tree.
+The `VarLeaf` class represents a variable leaf node in the symbolic expression tree. It is a class derived from `Leaf`, reshaped to handle variable values instead of const ones, assigning values from externally and uniquely identifying const and var instances.
 
 - **Attributes:**
   - `name`: The name of the variable.
@@ -183,19 +196,12 @@ The `VarLeaf` class represents a variable leaf node in the symbolic expression t
 - **Methods:**
   - `__init__(self, name: str)`: Initializes the variable leaf.
     - `name`: The name of the variable.
-  - `evaluate(self)`: Evaluates the variable leaf.
-  - `assign(self, value)`: Assigns a value to the variable leaf.
-    - `value`: The value to assign to the variable leaf.
-  - `unassign(self)`: Unassigns the value of the variable leaf.
-  - `fstr(self, fstr: Formatted = None) -> Formatted`: Returns a formatted string representation of the variable leaf.
-    - `fstr`: The formatted string to append to.
-  - `expr(self, names: Dict[str, str] = None) -> str`: Returns the string representation of the variable leaf.
-    - `names`: The names to use in the string representation.
-  - `deepCopy(self) -> "VarLeaf"`: Returns a deep copy of the variable leaf.
+  - some other methods are overridden...
 
 #### **SpecialLeaf**
 
 The `SpecialLeaf` class represents a special constant leaf node (e.g., π, e) in the symbolic expression tree.
+It is derived from the class `Leaf`, implementing basically a special representatio and a creation by string name, using numpy names.
 
 - **Attributes:**
   - `name`: The name of the special constant.
@@ -204,8 +210,7 @@ The `SpecialLeaf` class represents a special constant leaf node (e.g., π, e) in
 - **Methods:**
   - `__init__(self, name: Literal["pi", "e"])`: Initializes the special leaf.
     - `name`: The name of the special constant.
-  - `fstr(self, fstr: Formatted = None) -> Formatted`: Returns a formatted string representation of the special leaf.
-    - `fstr`: The formatted string to append to.
+  - some other methods are overridden...
 
 #### **IndividualTree**
 
@@ -213,14 +218,16 @@ The `IndividualTree` class represents an individual symbolic expression tree.
 
 - **Attributes:**
   - `root`: The root node of the tree.
-  - `inputLeaves`: The dictionary of input leaves.
+  - `inputLeaves`: The dictionary of input leaves. It is useful as it needs to be accessed every time a new input is provided to the expression tree.
   - `numInputs`: The number of input leaves.
+
+  Note that last 2 attributes are re-computed at each modification of the tree to keep the structure consistent.
 
 - **Methods:**
   - `__init__(self, root: Node, *, simplify: bool = False)`: Initializes the individual tree.
     - `root`: The root node of the tree.
-    - `simplify`: Whether to simplify the tree.
-  - `update(self)`: Updates the tree.
+    - `simplify`: Whether to simplify the tree after creation, useful for randomly-generated trees.
+  - `update(self)`: Updates the tree, simplyfying it if possible, and re-computing input leaves.
   - `evaluate_sample(self, kv_inputs: Dict[str, object])`: Evaluates the tree with the given input values.
     - `kv_inputs`: The input values to evaluate the tree with.
   - `tree_fstr(self) -> Formatted`: Returns a tree-formatted string representation of the tree.
@@ -248,13 +255,14 @@ The `IndividualTree` class represents an individual symbolic expression tree.
 
 ### Genetic Operators
 
-#### **SubEx**
+#### Recombination: **SubEx**
 
-The `SubEx` class represents the subtree exchange operator used in genetic programming.
+The `SubEx` class represents the subtree exchange operator used in genetic programming. It is basically the only Recombination Operator used in this framework.
+It consists of 2 trees exchanging random sub-trees.
 
 - **Attributes:**
   - `name`: The name of the operator.
-  - `rng`: The random number generator.
+  - `rng`: An instance of numpy random number generator.
 
 - **Methods:**
   - `__init__(self, rng: np.random.Generator)`: Initializes the subtree exchange operator.
@@ -266,11 +274,11 @@ The `SubEx` class represents the subtree exchange operator used in genetic progr
 #### **PointMut**
 
 The `PointMut` class represents the point mutation operator used in genetic programming.
+It consists of a change of an operator in a random internal node, choosing the replacing operator from the functional set, respecting the input arity of the former.
 
 - **Attributes:**
   - `name`: The name of the operator.
   - `rng`: The random number generator.
-  - `Fset`: The set of functions that can be used in the mutation.
 
 - **Methods:**
   - `__init__(self, rng: np.random.Generator, Fset: List[Node])`: Initializes the point mutation operator.
@@ -282,6 +290,7 @@ The `PointMut` class represents the point mutation operator used in genetic prog
 #### **PermMut**
 
 The `PermMut` class represents the permutation mutation operator used in genetic programming.
+It consists of a random permutation in the children of a random node.
 
 - **Attributes:**
   - `name`: The name of the operator.
@@ -296,6 +305,7 @@ The `PermMut` class represents the permutation mutation operator used in genetic
 #### **HoistMut**
 
 The `HoistMut` class represents the hoist mutation operator used in genetic programming.
+It consists of replacing a random node of the tree with one of its subtree.
 
 - **Attributes:**
   - `name`: The name of the operator.
@@ -310,12 +320,11 @@ The `HoistMut` class represents the hoist mutation operator used in genetic prog
 #### **CollapseMut**
 
 The `CollapseMut` class represents the collapse mutation operator used in genetic programming.
+It consists of replacing an internal node of the tree with a random leaf, either an input leaf or a const leaf.
 
 - **Attributes:**
   - `name`: The name of the operator.
   - `rng`: The random number generator.
-  - `input_leaves_names`: The list of input leaves names.
-  - `lgen_func`: The function to generate leaf nodes.
 
 - **Methods:**
   - `__init__(self, rng: np.random.Generator, input_leaves_names: List[str], lgen_func: Callable)`: Initializes the collapse mutation operator.
@@ -328,12 +337,11 @@ The `CollapseMut` class represents the collapse mutation operator used in geneti
 #### **MixedMut**
 
 The `MixedMut` class represents a mixed mutation operator that combines multiple mutation operators.
+It is a wrapper around all the other mutation operators, randomly picking them with provided probability, all equal by default.
 
 - **Attributes:**
   - `name`: The name of the operator.
   - `rng`: The random number generator.
-  - `Fset`: The set of functions that can be used in the mutation.
-  - `mutops`: The list of mutation operators.
 
 - **Methods:**
   - `__init__(self, rng: np.random.Generator, Fset: List[Node], input_leaves_names: List[str], grow_func: Callable, lgen_func: Callable)`: Initializes the mixed mutation operator.
@@ -351,18 +359,6 @@ The `MixedMut` class represents a mixed mutation operator that combines multiple
 
 The `Model` class represents the genetic programming model.
 
-- **Attributes:**
-  - `max_depth`: The maximum depth of the trees.
-  - `population_size`: The size of the population.
-  - `unaryFset`: The set of unary functions.
-  - `naryFset`: The set of n-ary functions.
-  - `input_leaves_names`: The list of input leaves names.
-  - `rng`: The random number generator.
-  - `MutOp`: The mutation operator.
-  - `RecOp`: The recombination operator.
-  - `fittest_grp_size`: The size of the fittest group.
-  - `split_in_fitness_groups`: Whether to split the population into fitness groups.
-
 - **Methods:**
   - `__init__(self, max_depth: int, population_size: int, Fset: list[Operator], input_leaves_names: list[str], *, rand_seed: int = _secret_recipe, fitness_grouping_perc: float = None, generation_params: Dict = None)`: Initializes the model.
     - `max_depth`: The maximum depth of the trees.
@@ -371,9 +367,57 @@ The `Model` class represents the genetic programming model.
     - `input_leaves_names`: The list of input leaves names.
     - `rand_seed`: The random seed.
     - `fitness_grouping_perc`: The percentage of the population to group by fitness.
-    - `generation_params`: The parameters for generating the trees.
+    - `generation_params`: The parameters for generating the trees. It is basically a dictionary that can contain some advanced configuration params:
+    ```python
+      generation_params = {
+        "int_constants":True, # use int as random constants
+        "randc_mean":0, # mean of random constants
+        "randc_std":5, # stddev of random constants
+        "ctv_prop":0.3, # ratio of constants to input variables
+        "stv_prop":0.1, # ratio of special constants (pi,e,...) to normal ones
+        "unary_to_others_prop":0.5 # ratio of unary operators to normal ones
+      }
+    ```
   - `__grow(self, curr_depth: int = 0) -> IndividualTree`: Grows a new individual tree.
     - `curr_depth`: The current depth of the tree.
   - `__leaf_gen(self) -> Leaf | SpecialLeaf | VarLeaf`: Generates a new leaf node.
   - `populate(self)`: Populates the model with a new generation of individual trees.
   - `kill(self)`: Kills the current population of the model.
+
+#### **BaseModel**
+
+The `BaseModel` is simply a wrapper around the `Model` class, that uses `npf` functions as the input of `Fset` of the model, so that there is no need to indicate manually all the operators.
+
+### npf
+
+The `npf` module provides a set of predefined operators and functions that can be used to build symbolic expressions. These operators are wrappers around common NumPy functions, allowing for seamless integration with the `symgp` library.
+
+All the operators can be accessed under the scope `npf`, under `symgp`.
+
+These operators can be used to construct complex mathematical expressions within the genetic programming framework provided by `symgp`.
+
+#### Example Usage
+
+Here is an example of how to use the `npf` operators to create a symbolic expression:
+
+```python
+from symgp import Node, Leaf, VarLeaf
+from symgp import npf
+
+# Create variable leaves
+x = VarLeaf("x")
+y = VarLeaf("y")
+
+# Create nodes using npf operators
+n1 = Node(npf.add, [x, y])
+n2 = Node(npf.pow, [n1, Leaf(2)])
+n3 = Node(npf.sin, [n2])
+
+# Print the expression
+print(n3.fstr())
+```
+
+## License And Notices
+This project is licensed under the Apache License 2.0. Please see the [LICENSE](LICENSE) file for the full text.
+
+Additional attribution notices for third-party libraries are provided in the [NOTICE.md](NOTICE.md) file.
